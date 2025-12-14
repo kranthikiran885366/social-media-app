@@ -1,5 +1,6 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:equatable/equatable.dart';
+import '../../../../core/services/api_service.dart';
 import '../../domain/entities/user.dart';
 import '../../domain/usecases/login_usecase.dart';
 
@@ -24,11 +25,20 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   void _onLoginRequested(LoginRequested event, Emitter<AuthState> emit) async {
     emit(AuthLoading());
     try {
-      final user = await _loginUseCase(LoginParams(
-        email: event.email,
-        password: event.password,
-      ));
-      emit(AuthAuthenticated(user));
+      final result = await ApiService.login(event.email, event.password);
+      if (result['success']) {
+        await ApiService.setToken(result['data']['token']);
+        final userData = result['data']['user'];
+        final user = User(
+          id: userData['id'],
+          email: userData['email'],
+          username: userData['username'],
+          createdAt: DateTime.parse(userData['createdAt']),
+        );
+        emit(AuthAuthenticated(user));
+      } else {
+        emit(AuthError(result['error']));
+      }
     } catch (e) {
       emit(AuthError(e.toString()));
     }
@@ -47,15 +57,28 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
 
   void _onRegisterRequested(RegisterRequested event, Emitter<AuthState> emit) async {
     emit(AuthLoading());
-    await Future.delayed(const Duration(seconds: 1));
-    // Mock user creation
-    final user = User(
-      id: 'mock_user_id',
-      email: event.email,
-      username: event.username,
-      createdAt: DateTime.now(),
-    );
-    emit(AuthAuthenticated(user));
+    try {
+      final result = await ApiService.register({
+        'email': event.email,
+        'username': event.username,
+        'password': event.password,
+      });
+      if (result['success']) {
+        await ApiService.setToken(result['data']['token']);
+        final userData = result['data']['user'];
+        final user = User(
+          id: userData['id'],
+          email: userData['email'],
+          username: userData['username'],
+          createdAt: DateTime.parse(userData['createdAt']),
+        );
+        emit(AuthAuthenticated(user));
+      } else {
+        emit(AuthError(result['error']));
+      }
+    } catch (e) {
+      emit(AuthError(e.toString()));
+    }
   }
 
   void _onGoogleLoginRequested(GoogleLoginRequested event, Emitter<AuthState> emit) async {

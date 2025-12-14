@@ -1,11 +1,14 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:equatable/equatable.dart';
+import '../../data/repositories/feed_repository.dart';
 
 part 'feed_event.dart';
 part 'feed_state.dart';
 
 class FeedBloc extends Bloc<FeedEvent, FeedState> {
-  FeedBloc() : super(FeedInitial()) {
+  final FeedRepository _feedRepository;
+  
+  FeedBloc(this._feedRepository) : super(FeedInitial()) {
     on<LoadFeed>(_onLoadFeed);
     on<RefreshFeed>(_onRefreshFeed);
     on<LoadMorePosts>(_onLoadMorePosts);
@@ -22,10 +25,21 @@ class FeedBloc extends Bloc<FeedEvent, FeedState> {
   void _onLoadFeed(LoadFeed event, Emitter<FeedState> emit) async {
     emit(FeedLoading());
     
-    await Future.delayed(const Duration(seconds: 1));
-    
-    final posts = _generateMockPosts();
-    emit(FeedLoaded(posts: posts));
+    try {
+      final result = await _feedRepository.getPersonalizedFeed(page: 1);
+      
+      if (result['success']) {
+        final postsData = result['data']['posts'] as List? ?? [];
+        final posts = postsData.map((postData) => _mapToPost(postData)).toList();
+        emit(FeedLoaded(posts: posts));
+      } else {
+        final posts = _generateMockPosts();
+        emit(FeedLoaded(posts: posts));
+      }
+    } catch (e) {
+      final posts = _generateMockPosts();
+      emit(FeedLoaded(posts: posts));
+    }
   }
 
   void _onRefreshFeed(RefreshFeed event, Emitter<FeedState> emit) async {
@@ -43,6 +57,24 @@ class FeedBloc extends Bloc<FeedEvent, FeedState> {
       final newPosts = _generateMockPosts();
       emit(FeedLoaded(posts: [...currentState.posts, ...newPosts]));
     }
+  }
+
+  Post _mapToPost(Map<String, dynamic> postData) {
+    return Post(
+      id: postData['id'] ?? '',
+      userId: postData['userId'] ?? '',
+      username: postData['username'] ?? '',
+      userAvatar: postData['userAvatar'] ?? '',
+      content: postData['content'] ?? '',
+      likes: postData['likes'] ?? 0,
+      comments: postData['comments'] ?? 0,
+      timestamp: DateTime.tryParse(postData['timestamp'] ?? '') ?? DateTime.now(),
+      qualityScore: (postData['qualityScore'] ?? 0).toDouble(),
+      isVerified: postData['isVerified'] ?? false,
+      location: postData['location'],
+      hashtags: List<String>.from(postData['hashtags'] ?? []),
+      mentions: List<String>.from(postData['mentions'] ?? []),
+    );
   }
 
   List<Post> _generateMockPosts() {

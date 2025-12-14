@@ -1,0 +1,187 @@
+version: '3.8'
+
+services:
+  # Load Balancer
+  load-balancer:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      - NODE_ENV=production
+    depends_on:
+      - redis
+      - auth-service
+      - content-service
+    networks:
+      - smart-social-network
+
+  # Core Services
+  auth-service:
+    build: ../services/auth-service
+    ports:
+      - "3001:3001"
+    environment:
+      - MONGODB_URI=mongodb://mongodb:27017/smart_social_auth
+      - JWT_SECRET=${JWT_SECRET}
+      - REDIS_URL=redis://redis:6379
+    depends_on:
+      - mongodb
+      - redis
+    networks:
+      - smart-social-network
+
+  content-service:
+    build: ../services/content-service
+    ports:
+      - "3003:3003"
+    environment:
+      - MONGODB_URI=mongodb://mongodb:27017/smart_social_content
+      - AWS_S3_BUCKET=${AWS_S3_BUCKET}
+      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+    depends_on:
+      - mongodb
+    networks:
+      - smart-social-network
+
+  analytics-service:
+    build: ../services/analytics-service
+    ports:
+      - "3008:3008"
+    environment:
+      - MONGODB_URI=mongodb://mongodb:27017/smart_social_analytics
+      - REDIS_URL=redis://redis:6379
+    depends_on:
+      - mongodb
+      - redis
+    networks:
+      - smart-social-network
+
+  chat-service:
+    build: ../services/chat-service
+    ports:
+      - "3010:3010"
+    environment:
+      - MONGODB_URI=mongodb://mongodb:27017/smart_social_chat
+    depends_on:
+      - mongodb
+    networks:
+      - smart-social-network
+
+  recommendation-service:
+    build: ../services/recommendation-service
+    ports:
+      - "3013:3013"
+    environment:
+      - MONGODB_URI=mongodb://mongodb:27017/smart_social_recommendations
+      - REDIS_URL=redis://redis:6379
+    depends_on:
+      - mongodb
+      - redis
+    networks:
+      - smart-social-network
+
+  media-service:
+    build: ../services/media-service
+    ports:
+      - "3014:3014"
+    environment:
+      - AWS_S3_BUCKET=${AWS_S3_BUCKET}
+      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+      - CLOUDFRONT_DOMAIN=${CLOUDFRONT_DOMAIN}
+    networks:
+      - smart-social-network
+
+  monitoring-service:
+    build: ../services/monitoring-service
+    ports:
+      - "3015:3015"
+    environment:
+      - MONGODB_URI=mongodb://mongodb:27017/smart_social_monitoring
+      - REDIS_URL=redis://redis:6379
+    depends_on:
+      - mongodb
+      - redis
+    networks:
+      - smart-social-network
+
+  # Databases
+  mongodb:
+    image: mongo:6.0
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+    networks:
+      - smart-social-network
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - smart-social-network
+
+  # Monitoring
+  prometheus:
+    image: prom/prometheus:latest
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus_data:/prometheus
+    networks:
+      - smart-social-network
+
+  grafana:
+    image: grafana/grafana:latest
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    volumes:
+      - grafana_data:/var/lib/grafana
+    networks:
+      - smart-social-network
+
+  # Message Queue
+  rabbitmq:
+    image: rabbitmq:3-management
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      - RABBITMQ_DEFAULT_USER=admin
+      - RABBITMQ_DEFAULT_PASS=admin
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    networks:
+      - smart-social-network
+
+  # Search Engine
+  elasticsearch:
+    image: elasticsearch:8.8.0
+    ports:
+      - "9200:9200"
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+    volumes:
+      - elasticsearch_data:/usr/share/elasticsearch/data
+    networks:
+      - smart-social-network
+
+volumes:
+  mongodb_data:
+  redis_data:
+  prometheus_data:
+  grafana_data:
+  rabbitmq_data:
+  elasticsearch_data:
+
+networks:
+  smart-social-network:
+    driver: bridge

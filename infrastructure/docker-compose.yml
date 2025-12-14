@@ -1,0 +1,157 @@
+version: '3.8'
+
+services:
+  # API Gateway
+  api-gateway:
+    image: kong:latest
+    ports:
+      - "8000:8000"
+      - "8001:8001"
+    environment:
+      KONG_DATABASE: "off"
+      KONG_DECLARATIVE_CONFIG: /kong/declarative/kong.yml
+      KONG_PROXY_ACCESS_LOG: /dev/stdout
+      KONG_ADMIN_ACCESS_LOG: /dev/stdout
+      KONG_PROXY_ERROR_LOG: /dev/stderr
+      KONG_ADMIN_ERROR_LOG: /dev/stderr
+      KONG_ADMIN_LISTEN: 0.0.0.0:8001
+    volumes:
+      - ./kong.yml:/kong/declarative/kong.yml
+
+  # Auth Service
+  auth-service:
+    build: ../microservices/auth-service
+    ports:
+      - "3001:3001"
+    environment:
+      - NODE_ENV=production
+      - MONGODB_URI=mongodb://mongo:27017/smart_social_auth
+      - JWT_SECRET=your-super-secret-jwt-key
+      - JWT_REFRESH_SECRET=your-super-secret-refresh-key
+    depends_on:
+      - mongo
+      - redis
+
+  # AI Moderation Service
+  ai-moderation-service:
+    build: ../microservices/ai-moderation-service
+    ports:
+      - "3005:3005"
+    environment:
+      - NODE_ENV=production
+      - MONGODB_URI=mongodb://mongo:27017/smart_social_moderation
+      - REDIS_URL=redis://redis:6379
+    depends_on:
+      - mongo
+      - redis
+
+  # Content Service
+  content-service:
+    build: ../microservices/content-service
+    ports:
+      - "3003:3003"
+    environment:
+      - NODE_ENV=production
+      - MONGODB_URI=mongodb://mongo:27017/smart_social_content
+      - REDIS_URL=redis://redis:6379
+      - AWS_S3_BUCKET=smart-social-media
+    depends_on:
+      - mongo
+      - redis
+
+  # Feed Service
+  feed-service:
+    build: ../microservices/feed-service
+    ports:
+      - "3004:3004"
+    environment:
+      - NODE_ENV=production
+      - MONGODB_URI=mongodb://mongo:27017/smart_social_feed
+      - REDIS_URL=redis://redis:6379
+      - ELASTICSEARCH_URL=http://elasticsearch:9200
+    depends_on:
+      - mongo
+      - redis
+      - elasticsearch
+
+  # Notification Service
+  notification-service:
+    build: ../microservices/notification-service
+    ports:
+      - "3007:3007"
+    environment:
+      - NODE_ENV=production
+      - MONGODB_URI=mongodb://mongo:27017/smart_social_notifications
+      - REDIS_URL=redis://redis:6379
+      - FIREBASE_PROJECT_ID=smart-social-platform
+    depends_on:
+      - mongo
+      - redis
+
+  # Analytics Service
+  analytics-service:
+    build: ../microservices/analytics-service
+    ports:
+      - "3008:3008"
+    environment:
+      - NODE_ENV=production
+      - MONGODB_URI=mongodb://mongo:27017/smart_social_analytics
+      - REDIS_URL=redis://redis:6379
+    depends_on:
+      - mongo
+      - redis
+
+  # Databases
+  mongo:
+    image: mongo:6.0
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: password123
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    command: redis-server --appendonly yes
+
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.9.0
+    ports:
+      - "9200:9200"
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    volumes:
+      - elasticsearch_data:/usr/share/elasticsearch/data
+
+  # Monitoring
+  prometheus:
+    image: prom/prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus_data:/prometheus
+
+  grafana:
+    image: grafana/grafana
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin123
+    volumes:
+      - grafana_data:/var/lib/grafana
+
+volumes:
+  mongo_data:
+  redis_data:
+  elasticsearch_data:
+  prometheus_data:
+  grafana_data:

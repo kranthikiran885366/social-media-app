@@ -1,0 +1,238 @@
+version: '3.8'
+
+services:
+  # Databases
+  mongodb:
+    image: mongo:6.0
+    container_name: smart_social_mongodb
+    restart: unless-stopped
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: smartsocial123
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+      - ./init-mongo.js:/docker-entrypoint-initdb.d/init-mongo.js:ro
+    networks:
+      - smart_social_network
+
+  redis:
+    image: redis:7-alpine
+    container_name: smart_social_redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - smart_social_network
+
+  # Microservices
+  auth-service:
+    build:
+      context: ./services/auth-service
+      dockerfile: Dockerfile
+    container_name: smart_social_auth
+    restart: unless-stopped
+    environment:
+      - NODE_ENV=development
+      - PORT=3001
+      - MONGODB_URI=mongodb://admin:smartsocial123@mongodb:27017/smart_social_auth?authSource=admin
+      - JWT_SECRET=your-super-secret-jwt-key-change-in-production
+      - JWT_REFRESH_SECRET=your-super-secret-refresh-key-change-in-production
+      - REDIS_URL=redis://redis:6379
+    ports:
+      - "3001:3001"
+    depends_on:
+      - mongodb
+      - redis
+    networks:
+      - smart_social_network
+    volumes:
+      - ./services/auth-service:/app
+      - /app/node_modules
+
+  content-service:
+    build:
+      context: ./services/content-service
+      dockerfile: Dockerfile
+    container_name: smart_social_content
+    restart: unless-stopped
+    environment:
+      - NODE_ENV=development
+      - PORT=3003
+      - MONGODB_URI=mongodb://admin:smartsocial123@mongodb:27017/smart_social_content?authSource=admin
+      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+      - AWS_REGION=${AWS_REGION:-us-east-1}
+      - AWS_S3_BUCKET=${AWS_S3_BUCKET:-smart-social-media}
+    ports:
+      - "3003:3003"
+    depends_on:
+      - mongodb
+    networks:
+      - smart_social_network
+    volumes:
+      - ./services/content-service:/app
+      - /app/node_modules
+
+  ai-moderation-service:
+    build:
+      context: ./services/ai-moderation-service
+      dockerfile: Dockerfile
+    container_name: smart_social_ai
+    restart: unless-stopped
+    environment:
+      - NODE_ENV=development
+      - PORT=3005
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - GOOGLE_VISION_KEY_PATH=/app/google-vision-key.json
+    ports:
+      - "3005:3005"
+    networks:
+      - smart_social_network
+    volumes:
+      - ./services/ai-moderation-service:/app
+      - /app/node_modules
+      - ${GOOGLE_VISION_KEY_PATH}:/app/google-vision-key.json:ro
+
+  chat-service:
+    build:
+      context: ./services/chat-service
+      dockerfile: Dockerfile
+    container_name: smart_social_chat
+    restart: unless-stopped
+    environment:
+      - NODE_ENV=development
+      - PORT=3010
+      - MONGODB_URI=mongodb://admin:smartsocial123@mongodb:27017/smart_social_chat?authSource=admin
+      - JWT_SECRET=your-super-secret-jwt-key-change-in-production
+      - REDIS_URL=redis://redis:6379
+    ports:
+      - "3010:3010"
+    depends_on:
+      - mongodb
+      - redis
+    networks:
+      - smart_social_network
+    volumes:
+      - ./services/chat-service:/app
+      - /app/node_modules
+
+  analytics-service:
+    build:
+      context: ./services/analytics-service
+      dockerfile: Dockerfile
+    container_name: smart_social_analytics
+    restart: unless-stopped
+    environment:
+      - NODE_ENV=development
+      - PORT=3008
+      - MONGODB_URI=mongodb://admin:smartsocial123@mongodb:27017/smart_social_analytics?authSource=admin
+    ports:
+      - "3008:3008"
+    depends_on:
+      - mongodb
+    networks:
+      - smart_social_network
+    volumes:
+      - ./services/analytics-service:/app
+      - /app/node_modules
+
+  api-gateway:
+    build:
+      context: ./api-gateway
+      dockerfile: Dockerfile
+    container_name: smart_social_gateway
+    restart: unless-stopped
+    environment:
+      - NODE_ENV=development
+      - PORT=8000
+      - JWT_SECRET=your-super-secret-jwt-key-change-in-production
+      - AUTH_SERVICE_URL=http://auth-service:3001
+      - CONTENT_SERVICE_URL=http://content-service:3003
+      - AI_SERVICE_URL=http://ai-moderation-service:3005
+      - ANALYTICS_SERVICE_URL=http://analytics-service:3008
+      - CHAT_SERVICE_URL=http://chat-service:3010
+      - ALLOWED_ORIGINS=http://localhost:3000,http://localhost:8080
+    ports:
+      - "8000:8000"
+    depends_on:
+      - auth-service
+      - content-service
+      - ai-moderation-service
+      - chat-service
+      - analytics-service
+    networks:
+      - smart_social_network
+    volumes:
+      - ./api-gateway:/app
+      - /app/node_modules
+
+  # Monitoring & Observability
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: smart_social_prometheus
+    restart: unless-stopped
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--web.enable-lifecycle'
+    networks:
+      - smart_social_network
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: smart_social_grafana
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=smartsocial123
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./monitoring/grafana/dashboards:/etc/grafana/provisioning/dashboards:ro
+      - ./monitoring/grafana/datasources:/etc/grafana/provisioning/datasources:ro
+    networks:
+      - smart_social_network
+
+  # Load Balancer
+  nginx:
+    image: nginx:alpine
+    container_name: smart_social_nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/ssl:/etc/nginx/ssl:ro
+    depends_on:
+      - api-gateway
+    networks:
+      - smart_social_network
+
+volumes:
+  mongodb_data:
+    driver: local
+  redis_data:
+    driver: local
+  prometheus_data:
+    driver: local
+  grafana_data:
+    driver: local
+
+networks:
+  smart_social_network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16

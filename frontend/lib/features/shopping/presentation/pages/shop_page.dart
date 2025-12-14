@@ -22,95 +22,152 @@ class _ShopPageState extends State<ShopPage> with TickerProviderStateMixin {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
-      appBar: _buildAppBar(),
-      body: Column(
-        children: [
-          _buildSearchBar(),
-          _buildTabBar(),
-          Expanded(
-            child: TabBarView(
-              controller: _tabController,
-              children: [
-                _buildFeaturedTab(),
-                _buildCategoriesTab(),
-                _buildBrandsTab(),
-                _buildDealsTab(),
-              ],
-            ),
-          ),
-        ],
+      body: LayoutBuilder(
+        builder: (context, constraints) {
+          final isTablet = constraints.maxWidth > 600;
+          return CustomScrollView(
+            slivers: [
+              _buildAppBar(isTablet),
+              SliverToBoxAdapter(child: _buildSearchBar(isTablet)),
+              SliverToBoxAdapter(child: _buildTabBar(isTablet)),
+              SliverFillRemaining(
+                child: TabBarView(
+                  controller: _tabController,
+                  children: [
+                    _buildFeaturedTab(isTablet),
+                    _buildCategoriesTab(isTablet),
+                    _buildBrandsTab(isTablet),
+                    _buildDealsTab(isTablet),
+                  ],
+                ),
+              ),
+            ],
+          );
+        },
       ),
     );
   }
 
-  PreferredSizeWidget _buildAppBar() {
-    return AppBar(
+  Widget _buildAppBar(bool isTablet) {
+    return SliverAppBar(
       backgroundColor: AppColors.background,
       elevation: 0,
-      title: ShaderMask(
-        shaderCallback: (bounds) => AppColors.primaryGradient.createShader(bounds),
-        child: Text(
-          'Shop',
-          style: TextStyle(
-            color: Colors.white,
-            fontSize: 24,
-            fontWeight: FontWeight.w700,
+      floating: true,
+      snap: true,
+      expandedHeight: isTablet ? 120 : 100,
+      flexibleSpace: FlexibleSpaceBar(
+        background: Container(
+          decoration: BoxDecoration(
+            gradient: AppColors.primaryGradient.scale(0.1),
           ),
         ),
+        title: ShaderMask(
+          shaderCallback: (bounds) => AppColors.primaryGradient.createShader(bounds),
+          child: Text(
+            'Shop',
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: isTablet ? 28 : 24,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+        ),
+        centerTitle: false,
       ),
       actions: [
-        IconButton(
-          icon: Container(
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              color: AppColors.primary.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Icon(Icons.shopping_bag_outlined, color: AppColors.primary),
+        Container(
+          margin: EdgeInsets.only(
+            right: isTablet ? 24 : 16,
+            top: isTablet ? 12 : 8,
           ),
-          onPressed: () {},
+          decoration: BoxDecoration(
+            gradient: AppColors.primaryGradient,
+            borderRadius: BorderRadius.circular(isTablet ? 16 : 12),
+            boxShadow: [
+              BoxShadow(
+                color: AppColors.primary.withOpacity(0.3),
+                blurRadius: isTablet ? 12 : 8,
+                offset: const Offset(0, 4),
+              ),
+            ],
+          ),
+          child: IconButton(
+            icon: Icon(
+              Icons.shopping_bag_outlined,
+              color: Colors.white,
+              size: isTablet ? 28 : 24,
+            ),
+            onPressed: () {},
+          ),
         ),
-        const SizedBox(width: 8),
       ],
     );
   }
 
-  Widget _buildSearchBar() {
+  Widget _buildSearchBar(bool isTablet) {
     return Container(
-      padding: const EdgeInsets.all(16),
-      child: Container(
-        height: 44,
-        decoration: BoxDecoration(
-          color: AppColors.backgroundSecondary,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: AppColors.border),
+      margin: EdgeInsets.all(isTablet ? 24 : 16),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(isTablet ? 20 : 16),
+        border: Border.all(color: AppColors.border),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.primary.withOpacity(0.05),
+            blurRadius: isTablet ? 15 : 10,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: TextField(
+        controller: _searchController,
+        style: TextStyle(
+          fontSize: isTablet ? 18 : 16,
+          color: AppColors.textPrimary,
         ),
-        child: TextField(
-          controller: _searchController,
-          style: TextStyle(fontSize: 16, color: AppColors.textPrimary),
-          decoration: InputDecoration(
-            hintText: 'Search products...',
-            hintStyle: TextStyle(color: AppColors.textTertiary),
-            prefixIcon: Icon(Icons.search, color: AppColors.textSecondary),
-            border: InputBorder.none,
-            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        decoration: InputDecoration(
+          hintText: 'Search products...',
+          hintStyle: TextStyle(
+            color: AppColors.textTertiary,
+            fontSize: isTablet ? 18 : 16,
+          ),
+          prefixIcon: Icon(
+            Icons.search,
+            color: AppColors.textSecondary,
+            size: isTablet ? 28 : 24,
+          ),
+          border: InputBorder.none,
+          contentPadding: EdgeInsets.symmetric(
+            horizontal: isTablet ? 24 : 20,
+            vertical: isTablet ? 20 : 16,
           ),
         ),
       ),
     );
   }
 
-  Widget _buildTabBar() {
+  Widget _buildTabBar(bool isTablet) {
     return Container(
+      margin: EdgeInsets.symmetric(
+        horizontal: isTablet ? 24 : 16,
+      ),
       decoration: BoxDecoration(
-        border: Border(bottom: BorderSide(color: AppColors.border, width: 0.5)),
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(isTablet ? 16 : 12),
+        border: Border.all(color: AppColors.border),
       ),
       child: TabBar(
         controller: _tabController,
-        indicatorColor: AppColors.primary,
-        labelColor: AppColors.textPrimary,
-        unselectedLabelColor: AppColors.textTertiary,
-        labelStyle: TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+        indicator: BoxDecoration(
+          gradient: AppColors.primaryGradient,
+          borderRadius: BorderRadius.circular(isTablet ? 16 : 12),
+        ),
+        labelColor: Colors.white,
+        unselectedLabelColor: AppColors.textSecondary,
+        labelStyle: TextStyle(
+          fontSize: isTablet ? 16 : 14,
+          fontWeight: FontWeight.w700,
+        ),
         tabs: const [
           Tab(text: 'Featured'),
           Tab(text: 'Categories'),
@@ -121,25 +178,32 @@ class _ShopPageState extends State<ShopPage> with TickerProviderStateMixin {
     );
   }
 
-  Widget _buildFeaturedTab() {
+  Widget _buildFeaturedTab(bool isTablet) {
     return ListView(
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.all(isTablet ? 24 : 16),
       children: [
-        _buildFeaturedBanner(),
-        const SizedBox(height: 24),
-        _buildSectionTitle('Trending Products'),
-        const SizedBox(height: 16),
-        _buildProductGrid(),
+        _buildFeaturedBanner(isTablet),
+        SizedBox(height: isTablet ? 32 : 24),
+        _buildSectionTitle('Trending Products', isTablet),
+        SizedBox(height: isTablet ? 20 : 16),
+        _buildProductGrid(isTablet),
       ],
     );
   }
 
-  Widget _buildFeaturedBanner() {
+  Widget _buildFeaturedBanner(bool isTablet) {
     return Container(
-      height: 180,
+      height: isTablet ? 220 : 180,
       decoration: BoxDecoration(
         gradient: AppColors.primaryGradient,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(isTablet ? 24 : 16),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.primary.withOpacity(0.3),
+            blurRadius: isTablet ? 20 : 15,
+            offset: const Offset(0, 8),
+          ),
+        ],
       ),
       child: Stack(
         children: [
@@ -191,25 +255,34 @@ class _ShopPageState extends State<ShopPage> with TickerProviderStateMixin {
     );
   }
 
-  Widget _buildSectionTitle(String title) {
+  Widget _buildSectionTitle(String title, bool isTablet) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         Text(
           title,
           style: TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.w700,
+            fontSize: isTablet ? 22 : 18,
+            fontWeight: FontWeight.w800,
             color: AppColors.textPrimary,
+            letterSpacing: -0.3,
           ),
         ),
-        TextButton(
-          onPressed: () {},
+        Container(
+          padding: EdgeInsets.symmetric(
+            horizontal: isTablet ? 16 : 12,
+            vertical: isTablet ? 8 : 6,
+          ),
+          decoration: BoxDecoration(
+            gradient: AppColors.primaryGradient,
+            borderRadius: BorderRadius.circular(isTablet ? 16 : 12),
+          ),
           child: Text(
             'See All',
             style: TextStyle(
-              color: AppColors.primary,
-              fontWeight: FontWeight.w600,
+              color: Colors.white,
+              fontWeight: FontWeight.w700,
+              fontSize: isTablet ? 14 : 12,
             ),
           ),
         ),
@@ -217,32 +290,32 @@ class _ShopPageState extends State<ShopPage> with TickerProviderStateMixin {
     );
   }
 
-  Widget _buildProductGrid() {
+  Widget _buildProductGrid(bool isTablet) {
     return GridView.builder(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 2,
-        crossAxisSpacing: 16,
-        mainAxisSpacing: 16,
+      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: isTablet ? 3 : 2,
+        crossAxisSpacing: isTablet ? 20 : 16,
+        mainAxisSpacing: isTablet ? 20 : 16,
         childAspectRatio: 0.75,
       ),
       itemCount: 6,
-      itemBuilder: (context, index) => _buildProductCard(index),
+      itemBuilder: (context, index) => _buildProductCard(index, isTablet),
     );
   }
 
-  Widget _buildProductCard(int index) {
+  Widget _buildProductCard(int index, bool isTablet) {
     return Container(
       decoration: BoxDecoration(
         color: AppColors.surface,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(isTablet ? 20 : 16),
         border: Border.all(color: AppColors.border),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 2),
+            color: Colors.black.withOpacity(0.08),
+            blurRadius: isTablet ? 15 : 10,
+            offset: const Offset(0, 4),
           ),
         ],
       ),
@@ -294,20 +367,20 @@ class _ShopPageState extends State<ShopPage> with TickerProviderStateMixin {
     );
   }
 
-  Widget _buildCategoriesTab() {
+  Widget _buildCategoriesTab(bool isTablet) {
     return GridView.builder(
-      padding: const EdgeInsets.all(16),
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 2,
-        crossAxisSpacing: 16,
-        mainAxisSpacing: 16,
+      padding: EdgeInsets.all(isTablet ? 24 : 16),
+      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: isTablet ? 3 : 2,
+        crossAxisSpacing: isTablet ? 20 : 16,
+        mainAxisSpacing: isTablet ? 20 : 16,
       ),
       itemCount: 8,
-      itemBuilder: (context, index) => _buildCategoryCard(index),
+      itemBuilder: (context, index) => _buildCategoryCard(index, isTablet),
     );
   }
 
-  Widget _buildCategoryCard(int index) {
+  Widget _buildCategoryCard(int index, bool isTablet) {
     final categories = ['Fashion', 'Electronics', 'Home', 'Beauty', 'Sports', 'Books', 'Toys', 'Food'];
     final colors = [AppColors.primary, AppColors.secondary, AppColors.info, AppColors.success];
     
@@ -338,15 +411,15 @@ class _ShopPageState extends State<ShopPage> with TickerProviderStateMixin {
     );
   }
 
-  Widget _buildBrandsTab() {
+  Widget _buildBrandsTab(bool isTablet) {
     return ListView.builder(
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.all(isTablet ? 24 : 16),
       itemCount: 10,
-      itemBuilder: (context, index) => _buildBrandCard(index),
+      itemBuilder: (context, index) => _buildBrandCard(index, isTablet),
     );
   }
 
-  Widget _buildBrandCard(int index) {
+  Widget _buildBrandCard(int index, bool isTablet) {
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       padding: const EdgeInsets.all(16),
@@ -395,15 +468,15 @@ class _ShopPageState extends State<ShopPage> with TickerProviderStateMixin {
     );
   }
 
-  Widget _buildDealsTab() {
+  Widget _buildDealsTab(bool isTablet) {
     return ListView.builder(
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.all(isTablet ? 24 : 16),
       itemCount: 5,
-      itemBuilder: (context, index) => _buildDealCard(index),
+      itemBuilder: (context, index) => _buildDealCard(index, isTablet),
     );
   }
 
-  Widget _buildDealCard(int index) {
+  Widget _buildDealCard(int index, bool isTablet) {
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       height: 120,

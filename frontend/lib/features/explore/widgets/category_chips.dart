@@ -140,7 +140,7 @@ class ExploreGridItem extends StatelessWidget {
 
           // Sponsored indicator
           if (content.isSponsored)
-            const Positioned(
+            Positioned(
               top: 8,
               left: 8,
               child: Container(
@@ -149,7 +149,7 @@ class ExploreGridItem extends StatelessWidget {
                   color: Colors.blue,
                   borderRadius: BorderRadius.circular(4),
                 ),
-                child: Text(
+                child: const Text(
                   'Sponsored',
                   style: TextStyle(
                     color: Colors.white,

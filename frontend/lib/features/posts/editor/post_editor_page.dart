@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 import '../models/post_models.dart';
-import '../widgets/filter_grid.dart';
-import '../widgets/adjustment_controls.dart';
-import '../widgets/crop_editor.dart';
+// import '../widgets/filter_grid.dart';
+// import '../widgets/adjustment_controls.dart';
+// import '../widgets/crop_editor.dart';
 
 class PostEditorPage extends StatefulWidget {
   final List<XFile> mediaFiles;
@@ -144,30 +144,33 @@ class _PostEditorPageState extends State<PostEditorPage>
                       controller: _tabController,
                       children: [
                         // Filters Tab
-                        FilterGrid(
-                          selectedFilter: _selectedFilter,
-                          onFilterSelected: (filter) {
-                            setState(() => _selectedFilter = filter);
-                            _applyFilter(filter);
-                          },
-                        ),
+                        Center(child: Text('Filter Grid - Coming Soon')),
+                        // FilterGrid(
+                        //   selectedFilter: _selectedFilter,
+                        //   onFilterSelected: (filter) {
+                        //     setState(() => _selectedFilter = filter);
+                        //     _applyFilter(filter);
+                        //   },
+                        // ),
 
                         // Adjustments Tab
-                        AdjustmentControls(
-                          adjustments: _adjustments,
-                          onAdjustmentChanged: (adjustments) {
-                            setState(() => _adjustments = adjustments);
-                            _applyAdjustments(adjustments);
-                          },
-                        ),
+                        Center(child: Text('Adjustment Controls - Coming Soon')),
+                        // AdjustmentControls(
+                        //   adjustments: _adjustments,
+                        //   onAdjustmentChanged: (adjustments) {
+                        //     setState(() => _adjustments = adjustments);
+                        //     _applyAdjustments(adjustments);
+                        //   },
+                        // ),
 
                         // Crop Tab
-                        CropEditor(
-                          mediaFile: widget.mediaFiles[_currentMediaIndex],
-                          onCropChanged: (cropData) {
-                            _applyCrop(cropData);
-                          },
-                        ),
+                        Center(child: Text('Crop Editor - Coming Soon')),
+                        // CropEditor(
+                        //   mediaFile: widget.mediaFiles[_currentMediaIndex],
+                        //   onCropChanged: (cropData) {
+                        //     _applyCrop(cropData);
+                        //   },
+                        // ),
                       ],
                     ),
                   ),

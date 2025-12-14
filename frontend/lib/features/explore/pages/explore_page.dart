@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
+import '../../../../core/theme/app_colors.dart';
 import '../models/explore_models.dart';
 import '../widgets/explore_search_bar.dart';
 import '../widgets/category_chips.dart';
-import '../widgets/explore_grid_item.dart';
+// import '../widgets/explore_grid_item.dart';
 
 class ExplorePage extends StatefulWidget {
   const ExplorePage({Key? key}) : super(key: key);
@@ -83,138 +84,255 @@ class _ExplorePageState extends State<ExplorePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: CustomScrollView(
-        controller: _scrollController,
-        slivers: [
-          SliverAppBar(
-            floating: true,
-            snap: true,
-            backgroundColor: Colors.white,
-            elevation: 0,
-            title: ExploreSearchBar(
-              onSearchTap: () {},
-              onCameraTap: () {},
-            ),
-          ),
-
-          SliverToBoxAdapter(
-            child: CategoryChips(
-              selectedCategory: _selectedCategory,
-              onCategoryChanged: _onCategoryChanged,
-            ),
-          ),
-
-          if (_selectedCategory == ExploreCategory.all) ...[
-            SliverToBoxAdapter(
-              child: Container(
-                height: 100,
-                padding: const EdgeInsets.all(16),
-                child: ListView.builder(
-                  scrollDirection: Axis.horizontal,
-                  itemCount: _trendingHashtags.length,
-                  itemBuilder: (context, index) {
-                    final hashtag = _trendingHashtags[index];
-                    return Container(
-                      margin: const EdgeInsets.only(right: 12),
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                      decoration: BoxDecoration(
-                        color: Colors.blue,
-                        borderRadius: BorderRadius.circular(20),
+      backgroundColor: AppColors.background,
+      body: LayoutBuilder(
+        builder: (context, constraints) {
+          final isTablet = constraints.maxWidth > 600;
+          return CustomScrollView(
+            controller: _scrollController,
+            slivers: [
+              SliverAppBar(
+                floating: true,
+                snap: true,
+                backgroundColor: AppColors.background,
+                elevation: 0,
+                expandedHeight: isTablet ? 100 : 80,
+                flexibleSpace: FlexibleSpaceBar(
+                  background: Container(
+                    decoration: BoxDecoration(
+                      gradient: AppColors.primaryGradient.scale(0.1),
+                    ),
+                  ),
+                ),
+                title: Container(
+                  margin: EdgeInsets.symmetric(
+                    horizontal: isTablet ? 24 : 16,
+                  ),
+                  decoration: BoxDecoration(
+                    color: AppColors.surface,
+                    borderRadius: BorderRadius.circular(isTablet ? 20 : 16),
+                    border: Border.all(color: AppColors.border),
+                    boxShadow: [
+                      BoxShadow(
+                        color: AppColors.primary.withOpacity(0.05),
+                        blurRadius: isTablet ? 15 : 10,
+                        offset: const Offset(0, 2),
                       ),
-                      child: Center(
-                        child: Text(
-                          hashtag.hashtag,
-                          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                    ],
+                  ),
+                  child: ExploreSearchBar(
+                    onSearchTap: () {},
+                    onCameraTap: () {},
+                  ),
+                ),
+              ),
+
+              SliverToBoxAdapter(
+                child: Container(
+                  margin: EdgeInsets.symmetric(
+                    horizontal: isTablet ? 24 : 16,
+                    vertical: isTablet ? 16 : 12,
+                  ),
+                  decoration: BoxDecoration(
+                    color: AppColors.surface,
+                    borderRadius: BorderRadius.circular(isTablet ? 20 : 16),
+                    border: Border.all(color: AppColors.border),
+                  ),
+                  child: CategoryChips(
+                    selectedCategory: _selectedCategory,
+                    onCategoryChanged: _onCategoryChanged,
+                  ),
+                ),
+              ),
+
+              if (_selectedCategory == ExploreCategory.all) ...[
+                SliverToBoxAdapter(
+                  child: Container(
+                    height: isTablet ? 120 : 100,
+                    padding: EdgeInsets.all(isTablet ? 24 : 16),
+                    child: ListView.builder(
+                      scrollDirection: Axis.horizontal,
+                      itemCount: _trendingHashtags.length,
+                      itemBuilder: (context, index) {
+                        final hashtag = _trendingHashtags[index];
+                        return Container(
+                          margin: EdgeInsets.only(right: isTablet ? 16 : 12),
+                          padding: EdgeInsets.symmetric(
+                            horizontal: isTablet ? 20 : 16,
+                            vertical: isTablet ? 12 : 8,
+                          ),
+                          decoration: BoxDecoration(
+                            gradient: AppColors.primaryGradient,
+                            borderRadius: BorderRadius.circular(isTablet ? 24 : 20),
+                            boxShadow: [
+                              BoxShadow(
+                                color: AppColors.primary.withOpacity(0.3),
+                                blurRadius: isTablet ? 12 : 8,
+                                offset: const Offset(0, 4),
+                              ),
+                            ],
+                          ),
+                          child: Center(
+                            child: Text(
+                              hashtag.hashtag,
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.w700,
+                                fontSize: isTablet ? 16 : 14,
+                              ),
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                ),
+
+                SliverToBoxAdapter(
+                  child: Container(
+                    height: isTablet ? 160 : 120,
+                    padding: EdgeInsets.all(isTablet ? 24 : 16),
+                    child: ListView.builder(
+                      scrollDirection: Axis.horizontal,
+                      itemCount: _suggestedAccounts.length,
+                      itemBuilder: (context, index) {
+                        final account = _suggestedAccounts[index];
+                        return Container(
+                          width: isTablet ? 120 : 100,
+                          margin: EdgeInsets.only(right: isTablet ? 16 : 12),
+                          padding: EdgeInsets.all(isTablet ? 12 : 8),
+                          decoration: BoxDecoration(
+                            color: AppColors.surface,
+                            borderRadius: BorderRadius.circular(isTablet ? 20 : 16),
+                            border: Border.all(color: AppColors.border),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.05),
+                                blurRadius: isTablet ? 10 : 8,
+                                offset: const Offset(0, 2),
+                              ),
+                            ],
+                          ),
+                          child: Column(
+                            children: [
+                              Container(
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  border: Border.all(
+                                    color: AppColors.primary.withOpacity(0.2),
+                                    width: 2,
+                                  ),
+                                ),
+                                child: CircleAvatar(
+                                  radius: isTablet ? 24 : 20,
+                                  backgroundImage: NetworkImage(account.avatar),
+                                ),
+                              ),
+                              SizedBox(height: isTablet ? 8 : 6),
+                              Text(
+                                account.username,
+                                style: TextStyle(
+                                  fontSize: isTablet ? 14 : 12,
+                                  fontWeight: FontWeight.w700,
+                                  color: AppColors.textPrimary,
+                                ),
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                              SizedBox(height: isTablet ? 6 : 4),
+                              Container(
+                                padding: EdgeInsets.symmetric(
+                                  horizontal: isTablet ? 12 : 8,
+                                  vertical: isTablet ? 4 : 2,
+                                ),
+                                decoration: BoxDecoration(
+                                  gradient: AppColors.primaryGradient,
+                                  borderRadius: BorderRadius.circular(isTablet ? 12 : 8),
+                                ),
+                                child: Text(
+                                  'Follow',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: isTablet ? 12 : 10,
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                ),
+              ],
+
+              SliverPadding(
+                padding: EdgeInsets.all(isTablet ? 8 : 4),
+                sliver: SliverGrid(
+                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: isTablet ? 4 : 3,
+                    crossAxisSpacing: isTablet ? 8 : 4,
+                    mainAxisSpacing: isTablet ? 8 : 4,
+                    childAspectRatio: 1,
+                  ),
+                  delegate: SliverChildBuilderDelegate(
+                    (context, index) {
+                      if (index >= _exploreContent.length) {
+                        return Container(
+                          decoration: BoxDecoration(
+                            color: AppColors.backgroundSecondary,
+                            borderRadius: BorderRadius.circular(isTablet ? 12 : 8),
+                          ),
+                          child: Center(
+                            child: CircularProgressIndicator(
+                              color: AppColors.primary,
+                              strokeWidth: 2,
+                            ),
+                          ),
+                        );
+                      }
+                      
+                      final content = _exploreContent[index];
+                      return Container(
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(isTablet ? 12 : 8),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.1),
+                              blurRadius: isTablet ? 8 : 6,
+                              offset: const Offset(0, 2),
+                            ),
+                          ],
                         ),
-                      ),
-                    );
-                  },
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(isTablet ? 12 : 8),
+                          child: ExploreGridItem(
+                            content: content,
+                            onTap: () => _onContentTap(content, index),
+                          ),
+                        ),
+                      );
+                    },
+                    childCount: _exploreContent.length + (_isLoading ? 6 : 0),
+                  ),
                 ),
               ),
-            ),
 
-            SliverToBoxAdapter(
-              child: Container(
-                height: 120,
-                padding: const EdgeInsets.all(16),
-                child: ListView.builder(
-                  scrollDirection: Axis.horizontal,
-                  itemCount: _suggestedAccounts.length,
-                  itemBuilder: (context, index) {
-                    final account = _suggestedAccounts[index];
-                    return Container(
-                      width: 100,
-                      margin: const EdgeInsets.only(right: 12),
-                      child: Column(
-                        children: [
-                          CircleAvatar(
-                            radius: 30,
-                            backgroundImage: NetworkImage(account.avatar),
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            account.username,
-                            style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                          const SizedBox(height: 4),
-                          Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                            decoration: BoxDecoration(
-                              color: Colors.blue,
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: const Text(
-                              'Follow',
-                              style: TextStyle(color: Colors.white, fontSize: 10),
-                            ),
-                          ),
-                        ],
+              if (_isLoading && _exploreContent.isNotEmpty)
+                SliverToBoxAdapter(
+                  child: Padding(
+                    padding: EdgeInsets.all(isTablet ? 24 : 16),
+                    child: Center(
+                      child: CircularProgressIndicator(
+                        color: AppColors.primary,
+                        strokeWidth: 3,
                       ),
-                    );
-                  },
+                    ),
+                  ),
                 ),
-              ),
-            ),
-          ],
-
-          SliverPadding(
-            padding: const EdgeInsets.all(2),
-            sliver: SliverGrid(
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 3,
-                crossAxisSpacing: 2,
-                mainAxisSpacing: 2,
-                childAspectRatio: 1,
-              ),
-              delegate: SliverChildBuilderDelegate(
-                (context, index) {
-                  if (index >= _exploreContent.length) {
-                    return Container(
-                      color: Colors.grey[300],
-                      child: const Center(child: CircularProgressIndicator()),
-                    );
-                  }
-                  
-                  final content = _exploreContent[index];
-                  return ExploreGridItem(
-                    content: content,
-                    onTap: () => _onContentTap(content, index),
-                  );
-                },
-                childCount: _exploreContent.length + (_isLoading ? 6 : 0),
-              ),
-            ),
-          ),
-
-          if (_isLoading && _exploreContent.isNotEmpty)
-            const SliverToBoxAdapter(
-              child: Padding(
-                padding: EdgeInsets.all(16),
-                child: Center(child: CircularProgressIndicator()),
-              ),
-            ),
-        ],
+            ],
+          );
+        },
       ),
     );
   }

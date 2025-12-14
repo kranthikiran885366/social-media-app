@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:image_picker/image_picker.dart';
+import '../../../../core/theme/app_colors.dart';
 
 class ChatPage extends StatefulWidget {
   final String chatId;
@@ -62,48 +63,99 @@ class _ChatPageState extends State<ChatPage> with TickerProviderStateMixin {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: _buildAppBar(),
-      body: Column(
-        children: [
-          Expanded(
-            child: ListView.builder(
-              controller: _scrollController,
-              padding: const EdgeInsets.all(16),
-              itemCount: _messages.length + (_isTyping ? 1 : 0),
-              itemBuilder: (context, index) {
-                if (index == _messages.length && _isTyping) {
-                  return _buildTypingIndicator();
-                }
-                return _buildMessageBubble(_messages[index]);
-              },
-            ),
-          ),
-          _buildMessageInput(),
-        ],
+      backgroundColor: AppColors.background,
+      body: LayoutBuilder(
+        builder: (context, constraints) {
+          final isTablet = constraints.maxWidth > 600;
+          return Column(
+            children: [
+              _buildAppBar(isTablet),
+              Expanded(
+                child: Container(
+                  decoration: BoxDecoration(
+                    gradient: AppColors.primaryGradient.scale(0.02),
+                  ),
+                  child: ListView.builder(
+                    controller: _scrollController,
+                    padding: EdgeInsets.all(isTablet ? 24 : 16),
+                    itemCount: _messages.length + (_isTyping ? 1 : 0),
+                    itemBuilder: (context, index) {
+                      if (index == _messages.length && _isTyping) {
+                        return _buildTypingIndicator(isTablet);
+                      }
+                      return _buildMessageBubble(_messages[index], isTablet);
+                    },
+                  ),
+                ),
+              ),
+              _buildMessageInput(isTablet),
+            ],
+          );
+        },
       ),
     );
   }
 
-  PreferredSizeWidget _buildAppBar() {
-    return AppBar(
-      title: Row(
+  Widget _buildAppBar(bool isTablet) {
+    return Container(
+      padding: EdgeInsets.only(
+        top: MediaQuery.of(context).padding.top + (isTablet ? 16 : 8),
+        left: isTablet ? 24 : 16,
+        right: isTablet ? 24 : 16,
+        bottom: isTablet ? 16 : 12,
+      ),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: isTablet ? 15 : 10,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Row(
         children: [
+          Container(
+            decoration: BoxDecoration(
+              color: AppColors.backgroundSecondary,
+              borderRadius: BorderRadius.circular(isTablet ? 16 : 12),
+            ),
+            child: IconButton(
+              icon: Icon(
+                Icons.arrow_back,
+                color: AppColors.textPrimary,
+                size: isTablet ? 28 : 24,
+              ),
+              onPressed: () => Navigator.pop(context),
+            ),
+          ),
+          SizedBox(width: isTablet ? 16 : 12),
           Stack(
             children: [
-              CircleAvatar(
-                radius: 18,
-                backgroundImage: CachedNetworkImageProvider(
-                  'https://example.com/avatar.jpg',
+              Container(
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  border: Border.all(
+                    color: AppColors.primary.withOpacity(0.3),
+                    width: 2,
+                  ),
+                ),
+                child: CircleAvatar(
+                  radius: isTablet ? 22 : 18,
+                  backgroundImage: const CachedNetworkImageProvider(
+                    'https://example.com/avatar.jpg',
+                  ),
                 ),
               ),
               Positioned(
                 bottom: 0,
                 right: 0,
                 child: Container(
-                  width: 12,
-                  height: 12,
+                  width: isTablet ? 16 : 12,
+                  height: isTablet ? 16 : 12,
                   decoration: BoxDecoration(
-                    color: Colors.green,
+                    color: AppColors.success,
                     shape: BoxShape.circle,
                     border: Border.all(color: Colors.white, width: 2),
                   ),
@@ -111,87 +163,127 @@ class _ChatPageState extends State<ChatPage> with TickerProviderStateMixin {
               ),
             ],
           ),
-          const SizedBox(width: 12),
-          const Expanded(
+          SizedBox(width: isTablet ? 16 : 12),
+          Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
                   'John Doe',
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                  style: TextStyle(
+                    fontSize: isTablet ? 18 : 16,
+                    fontWeight: FontWeight.w700,
+                    color: AppColors.textPrimary,
+                  ),
                 ),
                 Text(
                   'Active now',
-                  style: TextStyle(fontSize: 12, color: Colors.grey),
+                  style: TextStyle(
+                    fontSize: isTablet ? 14 : 12,
+                    color: AppColors.success,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
               ],
             ),
           ),
+          Container(
+            decoration: BoxDecoration(
+              color: AppColors.primary.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(isTablet ? 16 : 12),
+            ),
+            child: IconButton(
+              icon: Icon(
+                Icons.videocam,
+                color: AppColors.primary,
+                size: isTablet ? 28 : 24,
+              ),
+              onPressed: _startVideoCall,
+            ),
+          ),
+          SizedBox(width: isTablet ? 8 : 4),
+          Container(
+            decoration: BoxDecoration(
+              color: AppColors.secondary.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(isTablet ? 16 : 12),
+            ),
+            child: IconButton(
+              icon: Icon(
+                Icons.call,
+                color: AppColors.secondary,
+                size: isTablet ? 28 : 24,
+              ),
+              onPressed: _startVoiceCall,
+            ),
+          ),
         ],
       ),
-      actions: [
-        IconButton(
-          icon: const Icon(Icons.videocam),
-          onPressed: _startVideoCall,
-        ),
-        IconButton(
-          icon: const Icon(Icons.call),
-          onPressed: _startVoiceCall,
-        ),
-        PopupMenuButton<String>(
-          onSelected: _handleMenuAction,
-          itemBuilder: (context) => [
-            const PopupMenuItem(value: 'mute', child: Text('Mute')),
-            const PopupMenuItem(value: 'disappearing', child: Text('Disappearing Messages')),
-            const PopupMenuItem(value: 'block', child: Text('Block')),
-            const PopupMenuItem(value: 'report', child: Text('Report')),
-          ],
-        ),
-      ],
     );
   }
 
-  Widget _buildMessageBubble(Message message) {
+  Widget _buildMessageBubble(Message message, bool isTablet) {
     final isMe = message.senderId == 'me';
     
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4),
+      padding: EdgeInsets.symmetric(vertical: isTablet ? 8 : 4),
       child: Row(
         mainAxisAlignment: isMe ? MainAxisAlignment.end : MainAxisAlignment.start,
         children: [
           if (!isMe) ...[
-            CircleAvatar(
-              radius: 12,
-              backgroundImage: CachedNetworkImageProvider(
-                'https://example.com/avatar.jpg',
+            Container(
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                border: Border.all(
+                  color: AppColors.border,
+                  width: 1,
+                ),
+              ),
+              child: CircleAvatar(
+                radius: isTablet ? 16 : 12,
+                backgroundImage: const CachedNetworkImageProvider(
+                  'https://example.com/avatar.jpg',
+                ),
               ),
             ),
-            const SizedBox(width: 8),
+            SizedBox(width: isTablet ? 12 : 8),
           ],
           Flexible(
             child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-              decoration: BoxDecoration(
-                color: isMe ? Colors.blue : Colors.grey[200],
-                borderRadius: BorderRadius.circular(20),
+              padding: EdgeInsets.symmetric(
+                horizontal: isTablet ? 20 : 16,
+                vertical: isTablet ? 14 : 10,
               ),
-              child: _buildMessageContent(message, isMe),
+              decoration: BoxDecoration(
+                gradient: isMe ? AppColors.primaryGradient : null,
+                color: isMe ? null : AppColors.surface,
+                borderRadius: BorderRadius.circular(isTablet ? 24 : 20),
+                border: isMe ? null : Border.all(color: AppColors.border),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.05),
+                    blurRadius: isTablet ? 8 : 6,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: _buildMessageContent(message, isMe, isTablet),
             ),
           ),
-          if (isMe) const SizedBox(width: 40),
-          if (!isMe) const SizedBox(width: 40),
+          SizedBox(width: isTablet ? 60 : 40),
         ],
       ),
     );
   }
 
-  Widget _buildMessageContent(Message message, bool isMe) {
+  Widget _buildMessageContent(Message message, bool isMe, bool isTablet) {
     switch (message.type) {
       case MessageType.text:
         return Text(
           message.text!,
           style: TextStyle(
-            color: isMe ? Colors.white : Colors.black,
+            color: isMe ? Colors.white : AppColors.textPrimary,
+            fontSize: isTablet ? 16 : 14,
+            fontWeight: FontWeight.w500,
           ),
         );
       case MessageType.image:
@@ -250,23 +342,33 @@ class _ChatPageState extends State<ChatPage> with TickerProviderStateMixin {
     }
   }
 
-  Widget _buildTypingIndicator() {
+  Widget _buildTypingIndicator(bool isTablet) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4),
+      padding: EdgeInsets.symmetric(vertical: isTablet ? 8 : 4),
       child: Row(
         children: [
-          CircleAvatar(
-            radius: 12,
-            backgroundImage: CachedNetworkImageProvider(
-              'https://example.com/avatar.jpg',
+          Container(
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              border: Border.all(color: AppColors.border),
+            ),
+            child: CircleAvatar(
+              radius: isTablet ? 16 : 12,
+              backgroundImage: const CachedNetworkImageProvider(
+                'https://example.com/avatar.jpg',
+              ),
             ),
           ),
-          const SizedBox(width: 8),
+          SizedBox(width: isTablet ? 12 : 8),
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+            padding: EdgeInsets.symmetric(
+              horizontal: isTablet ? 20 : 16,
+              vertical: isTablet ? 14 : 10,
+            ),
             decoration: BoxDecoration(
-              color: Colors.grey[200],
-              borderRadius: BorderRadius.circular(20),
+              color: AppColors.surface,
+              borderRadius: BorderRadius.circular(isTablet ? 24 : 20),
+              border: Border.all(color: AppColors.border),
             ),
             child: AnimatedBuilder(
               animation: _typingController,
@@ -300,63 +402,120 @@ class _ChatPageState extends State<ChatPage> with TickerProviderStateMixin {
     );
   }
 
-  Widget _buildMessageInput() {
+  Widget _buildMessageInput(bool isTablet) {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.all(isTablet ? 24 : 16),
       decoration: BoxDecoration(
-        color: Colors.white,
-        border: Border(top: BorderSide(color: Colors.grey[300]!)),
+        color: AppColors.surface,
+        border: Border(top: BorderSide(color: AppColors.border)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: isTablet ? 15 : 10,
+            offset: const Offset(0, -2),
+          ),
+        ],
       ),
       child: Row(
         children: [
-          IconButton(
-            icon: const Icon(Icons.camera_alt),
-            onPressed: _openCamera,
-          ),
-          IconButton(
-            icon: const Icon(Icons.photo),
-            onPressed: _pickImage,
-          ),
-          IconButton(
-            icon: const Icon(Icons.gif_box),
-            onPressed: _pickGif,
-          ),
-          Expanded(
-            child: TextField(
-              controller: _messageController,
-              decoration: InputDecoration(
-                hintText: 'Message...',
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(25),
-                  borderSide: BorderSide.none,
-                ),
-                filled: true,
-                fillColor: Colors.grey[100],
-                contentPadding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 8,
-                ),
+          Container(
+            decoration: BoxDecoration(
+              color: AppColors.primary.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(isTablet ? 16 : 12),
+            ),
+            child: IconButton(
+              icon: Icon(
+                Icons.camera_alt,
+                color: AppColors.primary,
+                size: isTablet ? 28 : 24,
               ),
-              onChanged: _onMessageChanged,
-              onSubmitted: _sendMessage,
+              onPressed: _openCamera,
             ),
           ),
-          const SizedBox(width: 8),
+          SizedBox(width: isTablet ? 8 : 4),
+          Container(
+            decoration: BoxDecoration(
+              color: AppColors.secondary.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(isTablet ? 16 : 12),
+            ),
+            child: IconButton(
+              icon: Icon(
+                Icons.photo,
+                color: AppColors.secondary,
+                size: isTablet ? 28 : 24,
+              ),
+              onPressed: _pickImage,
+            ),
+          ),
+          SizedBox(width: isTablet ? 8 : 4),
+          Container(
+            decoration: BoxDecoration(
+              color: AppColors.info.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(isTablet ? 16 : 12),
+            ),
+            child: IconButton(
+              icon: Icon(
+                Icons.gif_box,
+                color: AppColors.info,
+                size: isTablet ? 28 : 24,
+              ),
+              onPressed: _pickGif,
+            ),
+          ),
+          Expanded(
+            child: Container(
+              decoration: BoxDecoration(
+                color: AppColors.backgroundSecondary,
+                borderRadius: BorderRadius.circular(isTablet ? 28 : 25),
+                border: Border.all(color: AppColors.border),
+              ),
+              child: TextField(
+                controller: _messageController,
+                style: TextStyle(
+                  fontSize: isTablet ? 16 : 14,
+                  color: AppColors.textPrimary,
+                ),
+                decoration: InputDecoration(
+                  hintText: 'Message...',
+                  hintStyle: TextStyle(
+                    color: AppColors.textTertiary,
+                    fontSize: isTablet ? 16 : 14,
+                  ),
+                  border: InputBorder.none,
+                  contentPadding: EdgeInsets.symmetric(
+                    horizontal: isTablet ? 20 : 16,
+                    vertical: isTablet ? 16 : 12,
+                  ),
+                ),
+                onChanged: _onMessageChanged,
+                onSubmitted: _sendMessage,
+              ),
+            ),
+          ),
+          SizedBox(width: isTablet ? 12 : 8),
           GestureDetector(
             onTap: _messageController.text.isNotEmpty ? () => _sendMessage(_messageController.text) : null,
             onLongPressStart: _startVoiceRecording,
             onLongPressEnd: _stopVoiceRecording,
             child: Container(
-              width: 40,
-              height: 40,
+              width: isTablet ? 52 : 44,
+              height: isTablet ? 52 : 44,
               decoration: BoxDecoration(
-                color: _messageController.text.isNotEmpty ? Colors.blue : Colors.grey,
+                gradient: _messageController.text.isNotEmpty ? AppColors.primaryGradient : null,
+                color: _messageController.text.isEmpty ? AppColors.textTertiary : null,
                 shape: BoxShape.circle,
+                boxShadow: _messageController.text.isNotEmpty ? [
+                  BoxShadow(
+                    color: AppColors.primary.withOpacity(0.3),
+                    blurRadius: isTablet ? 12 : 8,
+                    offset: const Offset(0, 4),
+                  ),
+                ] : null,
               ),
               child: Icon(
                 _messageController.text.isNotEmpty ? Icons.send : Icons.mic,
                 color: Colors.white,
-                size: 20,
+                size: isTablet ? 24 : 20,
               ),
             ),
           ),

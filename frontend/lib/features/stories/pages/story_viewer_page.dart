@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../../core/theme/app_colors.dart';
 import '../models/story_models.dart';
 
 class StoryViewerPage extends StatefulWidget {
@@ -91,109 +92,183 @@ class _StoryViewerPageState extends State<StoryViewerPage>
   @override
   Widget build(BuildContext context) {
     if (_groupedStories.isEmpty) {
-      return const Scaffold(
+      return Scaffold(
         backgroundColor: Colors.black,
-        body: Center(child: CircularProgressIndicator()),
+        body: Center(
+          child: CircularProgressIndicator(
+            color: AppColors.primary,
+            strokeWidth: 3,
+          ),
+        ),
       );
     }
 
     return Scaffold(
       backgroundColor: Colors.black,
-      body: PageView.builder(
-        controller: _pageController,
-        onPageChanged: (index) {
-          setState(() {
-            _currentUserIndex = index;
-            _currentStoryIndex = 0;
-          });
-          _initializeStory();
-        },
-        itemCount: _groupedStories.length,
-        itemBuilder: (context, userIndex) {
-          final userStories = _groupedStories[userIndex];
-          final currentStory = userStories[_currentStoryIndex];
-          
-          return GestureDetector(
-            onTapDown: (details) {
-              final screenWidth = MediaQuery.of(context).size.width;
-              if (details.localPosition.dx < screenWidth / 3) {
-                // Previous story
-              } else if (details.localPosition.dx > screenWidth * 2 / 3) {
-                _nextStory();
-              } else {
-                setState(() => _isPaused = !_isPaused);
-              }
+      body: LayoutBuilder(
+        builder: (context, constraints) {
+          final isTablet = constraints.maxWidth > 600;
+          return PageView.builder(
+            controller: _pageController,
+            onPageChanged: (index) {
+              setState(() {
+                _currentUserIndex = index;
+                _currentStoryIndex = 0;
+              });
+              _initializeStory();
             },
-            child: Stack(
-              children: [
-                // Story Media
-                Positioned.fill(
-                  child: Image.network(currentStory.media.url, fit: BoxFit.cover),
-                ),
-
-                // Progress Indicators
-                Positioned(
-                  top: MediaQuery.of(context).padding.top + 8,
-                  left: 8,
-                  right: 8,
-                  child: Row(
-                    children: List.generate(userStories.length, (index) {
-                      return Expanded(
-                        child: Container(
-                          height: 3,
-                          margin: const EdgeInsets.symmetric(horizontal: 1),
-                          decoration: BoxDecoration(
-                            color: index < _currentStoryIndex 
-                                ? Colors.white 
-                                : index == _currentStoryIndex
-                                    ? Colors.white70
-                                    : Colors.white30,
-                            borderRadius: BorderRadius.circular(1.5),
-                          ),
+            itemCount: _groupedStories.length,
+            itemBuilder: (context, userIndex) {
+              final userStories = _groupedStories[userIndex];
+              final currentStory = userStories[_currentStoryIndex];
+              
+              return GestureDetector(
+                onTapDown: (details) {
+                  final screenWidth = MediaQuery.of(context).size.width;
+                  if (details.localPosition.dx < screenWidth / 3) {
+                    // Previous story
+                  } else if (details.localPosition.dx > screenWidth * 2 / 3) {
+                    _nextStory();
+                  } else {
+                    setState(() => _isPaused = !_isPaused);
+                  }
+                },
+                child: Stack(
+                  children: [
+                    // Story Media
+                    Positioned.fill(
+                      child: Container(
+                        decoration: BoxDecoration(
+                          borderRadius: isTablet ? BorderRadius.circular(20) : null,
                         ),
-                      );
-                    }),
-                  ),
-                ),
-
-                // User Info
-                Positioned(
-                  top: MediaQuery.of(context).padding.top + 40,
-                  left: 16,
-                  right: 16,
-                  child: Row(
-                    children: [
-                      CircleAvatar(
-                        radius: 20,
-                        backgroundImage: NetworkImage(currentStory.userAvatar),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              currentStory.username,
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold,
-                                fontSize: 16,
+                        child: ClipRRect(
+                          borderRadius: isTablet ? BorderRadius.circular(20) : BorderRadius.zero,
+                          child: Image.network(
+                            currentStory.media.url,
+                            fit: BoxFit.cover,
+                            errorBuilder: (context, error, stackTrace) => Container(
+                              color: AppColors.backgroundSecondary,
+                              child: Center(
+                                child: Icon(
+                                  Icons.error_outline,
+                                  color: AppColors.textTertiary,
+                                  size: isTablet ? 80 : 60,
+                                ),
                               ),
                             ),
-                            Text(
-                              '2h ago',
-                              style: const TextStyle(color: Colors.white70, fontSize: 12),
+                          ),
+                        ),
+                      ),
+                    ),
+
+                    // Progress Indicators
+                    Positioned(
+                      top: MediaQuery.of(context).padding.top + (isTablet ? 16 : 8),
+                      left: isTablet ? 24 : 12,
+                      right: isTablet ? 24 : 12,
+                      child: Row(
+                        children: List.generate(userStories.length, (index) {
+                          return Expanded(
+                            child: Container(
+                              height: isTablet ? 4 : 3,
+                              margin: EdgeInsets.symmetric(
+                                horizontal: isTablet ? 2 : 1,
+                              ),
+                              decoration: BoxDecoration(
+                                gradient: index < _currentStoryIndex 
+                                    ? AppColors.primaryGradient
+                                    : null,
+                                color: index < _currentStoryIndex 
+                                    ? null
+                                    : index == _currentStoryIndex
+                                        ? Colors.white.withOpacity(0.8)
+                                        : Colors.white.withOpacity(0.3),
+                                borderRadius: BorderRadius.circular(isTablet ? 2 : 1.5),
+                                boxShadow: index <= _currentStoryIndex ? [
+                                  BoxShadow(
+                                    color: Colors.black.withOpacity(0.2),
+                                    blurRadius: isTablet ? 4 : 2,
+                                    offset: const Offset(0, 1),
+                                  ),
+                                ] : null,
+                              ),
+                            ),
+                          );
+                        }),
+                      ),
+                    ),
+
+                    // User Info
+                    Positioned(
+                      top: MediaQuery.of(context).padding.top + (isTablet ? 60 : 40),
+                      left: isTablet ? 24 : 16,
+                      right: isTablet ? 24 : 16,
+                      child: Container(
+                        padding: EdgeInsets.all(isTablet ? 16 : 12),
+                        decoration: BoxDecoration(
+                          color: Colors.black.withOpacity(0.3),
+                          borderRadius: BorderRadius.circular(isTablet ? 20 : 16),
+                          border: Border.all(
+                            color: Colors.white.withOpacity(0.2),
+                            width: 1,
+                          ),
+                        ),
+                        child: Row(
+                          children: [
+                            Container(
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                border: Border.all(
+                                  color: Colors.white.withOpacity(0.3),
+                                  width: 2,
+                                ),
+                              ),
+                              child: CircleAvatar(
+                                radius: isTablet ? 24 : 20,
+                                backgroundImage: NetworkImage(currentStory.userAvatar),
+                              ),
+                            ),
+                            SizedBox(width: isTablet ? 16 : 12),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    currentStory.username,
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.w700,
+                                      fontSize: isTablet ? 18 : 16,
+                                    ),
+                                  ),
+                                  Text(
+                                    '2h ago',
+                                    style: TextStyle(
+                                      color: Colors.white.withOpacity(0.8),
+                                      fontSize: isTablet ? 14 : 12,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            Container(
+                              decoration: BoxDecoration(
+                                color: Colors.black.withOpacity(0.3),
+                                borderRadius: BorderRadius.circular(isTablet ? 16 : 12),
+                              ),
+                              child: IconButton(
+                                onPressed: () => Navigator.pop(context),
+                                icon: Icon(
+                                  Icons.close,
+                                  color: Colors.white,
+                                  size: isTablet ? 28 : 24,
+                                ),
+                              ),
                             ),
                           ],
                         ),
                       ),
-                      IconButton(
-                        onPressed: () => Navigator.pop(context),
-                        icon: const Icon(Icons.close, color: Colors.white),
-                      ),
-                    ],
-                  ),
-                ),
+                    ),
 
                 // Story Elements
                 ...currentStory.elements.map((element) => Positioned(
@@ -202,40 +277,85 @@ class _StoryViewerPageState extends State<StoryViewerPage>
                   child: _buildElementWidget(element),
                 )),
 
-                // Bottom Interactions
-                Positioned(
-                  bottom: MediaQuery.of(context).padding.bottom + 16,
-                  left: 16,
-                  right: 16,
-                  child: Row(
-                    children: [
-                      Expanded(
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                          decoration: BoxDecoration(
-                            border: Border.all(color: Colors.white),
-                            borderRadius: BorderRadius.circular(25),
-                          ),
-                          child: const Text(
-                            'Send message',
-                            style: TextStyle(color: Colors.white),
+                    // Bottom Interactions
+                    Positioned(
+                      bottom: MediaQuery.of(context).padding.bottom + (isTablet ? 24 : 16),
+                      left: isTablet ? 24 : 16,
+                      right: isTablet ? 24 : 16,
+                      child: Container(
+                        padding: EdgeInsets.all(isTablet ? 16 : 12),
+                        decoration: BoxDecoration(
+                          color: Colors.black.withOpacity(0.3),
+                          borderRadius: BorderRadius.circular(isTablet ? 20 : 16),
+                          border: Border.all(
+                            color: Colors.white.withOpacity(0.2),
+                            width: 1,
                           ),
                         ),
+                        child: Row(
+                          children: [
+                            Expanded(
+                              child: Container(
+                                padding: EdgeInsets.symmetric(
+                                  horizontal: isTablet ? 20 : 16,
+                                  vertical: isTablet ? 16 : 12,
+                                ),
+                                decoration: BoxDecoration(
+                                  border: Border.all(
+                                    color: Colors.white.withOpacity(0.5),
+                                    width: 1.5,
+                                  ),
+                                  borderRadius: BorderRadius.circular(isTablet ? 20 : 16),
+                                ),
+                                child: Text(
+                                  'Send message',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: isTablet ? 16 : 14,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                  textAlign: TextAlign.center,
+                                ),
+                              ),
+                            ),
+                            SizedBox(width: isTablet ? 16 : 12),
+                            Container(
+                              decoration: BoxDecoration(
+                                color: Colors.white.withOpacity(0.1),
+                                borderRadius: BorderRadius.circular(isTablet ? 16 : 12),
+                              ),
+                              child: IconButton(
+                                onPressed: () {},
+                                icon: Icon(
+                                  Icons.favorite_border,
+                                  color: Colors.white,
+                                  size: isTablet ? 28 : 24,
+                                ),
+                              ),
+                            ),
+                            SizedBox(width: isTablet ? 8 : 4),
+                            Container(
+                              decoration: BoxDecoration(
+                                color: Colors.white.withOpacity(0.1),
+                                borderRadius: BorderRadius.circular(isTablet ? 16 : 12),
+                              ),
+                              child: IconButton(
+                                onPressed: () {},
+                                icon: Icon(
+                                  Icons.send,
+                                  color: Colors.white,
+                                  size: isTablet ? 28 : 24,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
-                      const SizedBox(width: 12),
-                      IconButton(
-                        onPressed: () {},
-                        icon: const Icon(Icons.favorite_border, color: Colors.white),
-                      ),
-                      IconButton(
-                        onPressed: () {},
-                        icon: const Icon(Icons.send, color: Colors.white),
-                      ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
-              ],
-            ),
+              );
+            },
           );
         },
       ),

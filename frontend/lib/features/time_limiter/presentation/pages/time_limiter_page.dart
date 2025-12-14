@@ -19,52 +19,96 @@ class _TimeLimiterPageState extends State<TimeLimiterPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
-      appBar: _buildAppBar(),
-      body: ListView(
-        padding: const EdgeInsets.all(16),
-        children: [
-          _buildUsageOverview(),
-          const SizedBox(height: 24),
-          _buildTimeLimitSection(),
-          const SizedBox(height: 24),
-          _buildWellbeingSection(),
-          const SizedBox(height: 24),
-          _buildInsightsSection(),
-        ],
+      body: LayoutBuilder(
+        builder: (context, constraints) {
+          final isTablet = constraints.maxWidth > 600;
+          return CustomScrollView(
+            slivers: [
+              _buildAppBar(isTablet),
+              SliverPadding(
+                padding: EdgeInsets.all(isTablet ? 24 : 16),
+                sliver: SliverList(
+                  delegate: SliverChildListDelegate([
+                    _buildUsageOverview(isTablet),
+                    SizedBox(height: isTablet ? 32 : 24),
+                    _buildTimeLimitSection(isTablet),
+                    SizedBox(height: isTablet ? 32 : 24),
+                    _buildWellbeingSection(isTablet),
+                    SizedBox(height: isTablet ? 32 : 24),
+                    _buildInsightsSection(isTablet),
+                  ]),
+                ),
+              ),
+            ],
+          );
+        },
       ),
     );
   }
 
-  PreferredSizeWidget _buildAppBar() {
-    return AppBar(
+  Widget _buildAppBar(bool isTablet) {
+    return SliverAppBar(
       backgroundColor: AppColors.background,
       elevation: 0,
-      title: Text(
-        'Digital Wellbeing',
-        style: TextStyle(
-          color: AppColors.textPrimary,
-          fontSize: 20,
-          fontWeight: FontWeight.w600,
+      floating: true,
+      snap: true,
+      expandedHeight: isTablet ? 120 : 100,
+      flexibleSpace: FlexibleSpaceBar(
+        background: Container(
+          decoration: BoxDecoration(
+            gradient: AppColors.primaryGradient.scale(0.1),
+          ),
         ),
+        title: Text(
+          'Digital Wellbeing',
+          style: TextStyle(
+            color: AppColors.textPrimary,
+            fontSize: isTablet ? 24 : 20,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+        centerTitle: false,
       ),
-      leading: IconButton(
-        icon: Icon(Icons.arrow_back, color: AppColors.textPrimary),
-        onPressed: () => Navigator.pop(context),
+      leading: Container(
+        margin: EdgeInsets.only(
+          left: isTablet ? 24 : 16,
+          top: isTablet ? 12 : 8,
+        ),
+        decoration: BoxDecoration(
+          color: AppColors.surface,
+          borderRadius: BorderRadius.circular(isTablet ? 16 : 12),
+          border: Border.all(color: AppColors.border),
+        ),
+        child: IconButton(
+          icon: Icon(
+            Icons.arrow_back,
+            color: AppColors.textPrimary,
+            size: isTablet ? 28 : 24,
+          ),
+          onPressed: () => Navigator.pop(context),
+        ),
       ),
     );
   }
 
-  Widget _buildUsageOverview() {
+  Widget _buildUsageOverview(bool isTablet) {
     final progress = _todayUsage / _dailyLimit;
     final remainingTime = _dailyLimit - _todayUsage;
     
     return Container(
-      padding: const EdgeInsets.all(24),
+      padding: EdgeInsets.all(isTablet ? 32 : 24),
       decoration: BoxDecoration(
         gradient: progress > 0.8 ? 
           LinearGradient(colors: [AppColors.error, AppColors.warning]) :
           AppColors.primaryGradient,
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(isTablet ? 28 : 20),
+        boxShadow: [
+          BoxShadow(
+            color: (progress > 0.8 ? AppColors.error : AppColors.primary).withOpacity(0.3),
+            blurRadius: isTablet ? 20 : 15,
+            offset: const Offset(0, 8),
+          ),
+        ],
       ),
       child: Column(
         children: [
@@ -72,16 +116,18 @@ class _TimeLimiterPageState extends State<TimeLimiterPage> {
             'Today\'s Usage',
             style: TextStyle(
               color: Colors.white.withOpacity(0.9),
-              fontSize: 16,
+              fontSize: isTablet ? 18 : 16,
+              fontWeight: FontWeight.w600,
             ),
           ),
-          const SizedBox(height: 8),
+          SizedBox(height: isTablet ? 12 : 8),
           Text(
             '${_todayUsage}m',
             style: TextStyle(
               color: Colors.white,
-              fontSize: 48,
-              fontWeight: FontWeight.w700,
+              fontSize: isTablet ? 56 : 48,
+              fontWeight: FontWeight.w800,
+              letterSpacing: -1,
             ),
           ),
           const SizedBox(height: 16),
@@ -117,7 +163,7 @@ class _TimeLimiterPageState extends State<TimeLimiterPage> {
     );
   }
 
-  Widget _buildTimeLimitSection() {
+  Widget _buildTimeLimitSection(bool isTablet) {
     return _buildSection('Time Limits', [
       _buildSwitchItem(
         Icons.timer,
@@ -126,18 +172,20 @@ class _TimeLimiterPageState extends State<TimeLimiterPage> {
         _timeLimitEnabled,
         (value) => setState(() => _timeLimitEnabled = value),
         AppColors.primary,
+        isTablet,
       ),
-      if (_timeLimitEnabled) _buildTimeLimitSlider(),
+      if (_timeLimitEnabled) _buildTimeLimitSlider(isTablet),
       _buildActionItem(
         Icons.schedule,
         'App Time Limits',
         'Set limits for specific apps',
         AppColors.secondary,
+        isTablet,
       ),
-    ]);
+    ], isTablet);
   }
 
-  Widget _buildTimeLimitSlider() {
+  Widget _buildTimeLimitSlider(bool isTablet) {
     return Container(
       padding: const EdgeInsets.all(16),
       child: Column(
@@ -185,7 +233,7 @@ class _TimeLimiterPageState extends State<TimeLimiterPage> {
     );
   }
 
-  Widget _buildWellbeingSection() {
+  Widget _buildWellbeingSection(bool isTablet) {
     return _buildSection('Wellbeing Features', [
       _buildSwitchItem(
         Icons.notifications_pause,
@@ -194,6 +242,7 @@ class _TimeLimiterPageState extends State<TimeLimiterPage> {
         _breakReminders,
         (value) => setState(() => _breakReminders = value),
         AppColors.info,
+        isTablet,
       ),
       _buildSwitchItem(
         Icons.bedtime,
@@ -202,43 +251,58 @@ class _TimeLimiterPageState extends State<TimeLimiterPage> {
         _bedtimeMode,
         (value) => setState(() => _bedtimeMode = value),
         AppColors.warning,
+        isTablet,
       ),
       _buildActionItem(
         Icons.focus_video,
         'Focus Mode',
         'Block distracting features',
         AppColors.success,
+        isTablet,
       ),
-    ]);
+    ], isTablet);
   }
 
-  Widget _buildInsightsSection() {
+  Widget _buildInsightsSection(bool isTablet) {
     return _buildSection('Usage Insights', [
-      _buildInsightItem('Most Active Day', 'Monday', Icons.calendar_today),
-      _buildInsightItem('Peak Usage Time', '8:00 PM', Icons.access_time),
-      _buildInsightItem('Weekly Average', '95m/day', Icons.trending_up),
-      _buildInsightItem('Longest Session', '45 minutes', Icons.timer),
-    ]);
+      _buildInsightItem('Most Active Day', 'Monday', Icons.calendar_today, isTablet),
+      _buildInsightItem('Peak Usage Time', '8:00 PM', Icons.access_time, isTablet),
+      _buildInsightItem('Weekly Average', '95m/day', Icons.trending_up, isTablet),
+      _buildInsightItem('Longest Session', '45 minutes', Icons.timer, isTablet),
+    ], isTablet);
   }
 
-  Widget _buildSection(String title, List<Widget> items) {
+  Widget _buildSection(String title, List<Widget> items, bool isTablet) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          title,
-          style: TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.w700,
-            color: AppColors.textPrimary,
+        Padding(
+          padding: EdgeInsets.only(
+            left: isTablet ? 8 : 4,
+            bottom: isTablet ? 16 : 12,
+          ),
+          child: Text(
+            title,
+            style: TextStyle(
+              fontSize: isTablet ? 22 : 18,
+              fontWeight: FontWeight.w800,
+              color: AppColors.textPrimary,
+              letterSpacing: -0.3,
+            ),
           ),
         ),
-        const SizedBox(height: 12),
         Container(
           decoration: BoxDecoration(
             color: AppColors.surface,
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: BorderRadius.circular(isTablet ? 20 : 16),
             border: Border.all(color: AppColors.border),
+            boxShadow: [
+              BoxShadow(
+                color: AppColors.primary.withOpacity(0.05),
+                blurRadius: isTablet ? 15 : 10,
+                offset: const Offset(0, 4),
+              ),
+            ],
           ),
           child: Column(children: items),
         ),
@@ -253,6 +317,7 @@ class _TimeLimiterPageState extends State<TimeLimiterPage> {
     bool value,
     Function(bool) onChanged,
     Color iconColor,
+    bool isTablet,
   ) {
     return Container(
       padding: const EdgeInsets.all(16),
@@ -301,7 +366,7 @@ class _TimeLimiterPageState extends State<TimeLimiterPage> {
     );
   }
 
-  Widget _buildActionItem(IconData icon, String title, String subtitle, Color iconColor) {
+  Widget _buildActionItem(IconData icon, String title, String subtitle, Color iconColor, bool isTablet) {
     return Material(
       color: Colors.transparent,
       child: InkWell(
@@ -352,7 +417,7 @@ class _TimeLimiterPageState extends State<TimeLimiterPage> {
     );
   }
 
-  Widget _buildInsightItem(String title, String value, IconData icon) {
+  Widget _buildInsightItem(String title, String value, IconData icon, bool isTablet) {
     return Container(
       padding: const EdgeInsets.all(16),
       child: Row(

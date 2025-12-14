@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
+import '../../../../core/theme/app_colors.dart';
 import '../models/post_models.dart';
 
 class PostInsightsPage extends StatefulWidget {
@@ -25,108 +26,207 @@ class _PostInsightsPageState extends State<PostInsightsPage>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Insights'),
-        actions: [
-          PopupMenuButton<String>(
-            onSelected: (period) => setState(() => _selectedPeriod = period),
-            itemBuilder: (context) => [
-              const PopupMenuItem(value: '1d', child: Text('Last 24 hours')),
-              const PopupMenuItem(value: '7d', child: Text('Last 7 days')),
-              const PopupMenuItem(value: '30d', child: Text('Last 30 days')),
-            ],
-          ),
-        ],
-      ),
-      body: Column(
-        children: [
-          // Post Preview
-          Container(
-            padding: const EdgeInsets.all(16),
-            child: Row(
-              children: [
-                Container(
-                  width: 60,
-                  height: 60,
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(8),
-                    image: DecorationImage(
-                      image: NetworkImage(widget.post.media.first.url),
-                      fit: BoxFit.cover,
+      backgroundColor: AppColors.background,
+      body: LayoutBuilder(
+        builder: (context, constraints) {
+          final isTablet = constraints.maxWidth > 600;
+          return CustomScrollView(
+            slivers: [
+              SliverAppBar(
+                backgroundColor: AppColors.background,
+                elevation: 0,
+                floating: true,
+                snap: true,
+                expandedHeight: isTablet ? 120 : 100,
+                flexibleSpace: FlexibleSpaceBar(
+                  background: Container(
+                    decoration: BoxDecoration(
+                      gradient: AppColors.primaryGradient.scale(0.1),
                     ),
                   ),
+                  title: Text(
+                    'Insights',
+                    style: TextStyle(
+                      color: AppColors.textPrimary,
+                      fontSize: isTablet ? 24 : 20,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  centerTitle: false,
                 ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        widget.post.caption.length > 50
-                            ? '${widget.post.caption.substring(0, 50)}...'
-                            : widget.post.caption,
-                        style: const TextStyle(fontWeight: FontWeight.bold),
+                leading: Container(
+                  margin: EdgeInsets.only(
+                    left: isTablet ? 24 : 16,
+                    top: isTablet ? 12 : 8,
+                  ),
+                  decoration: BoxDecoration(
+                    color: AppColors.surface,
+                    borderRadius: BorderRadius.circular(isTablet ? 16 : 12),
+                    border: Border.all(color: AppColors.border),
+                  ),
+                  child: IconButton(
+                    icon: Icon(
+                      Icons.arrow_back,
+                      color: AppColors.textPrimary,
+                      size: isTablet ? 28 : 24,
+                    ),
+                    onPressed: () => Navigator.pop(context),
+                  ),
+                ),
+                actions: [
+                  Container(
+                    margin: EdgeInsets.only(
+                      right: isTablet ? 24 : 16,
+                      top: isTablet ? 12 : 8,
+                    ),
+                    decoration: BoxDecoration(
+                      color: AppColors.surface,
+                      borderRadius: BorderRadius.circular(isTablet ? 16 : 12),
+                      border: Border.all(color: AppColors.border),
+                    ),
+                    child: PopupMenuButton<String>(
+                      onSelected: (period) => setState(() => _selectedPeriod = period),
+                      icon: Icon(
+                        Icons.more_vert,
+                        color: AppColors.textPrimary,
+                        size: isTablet ? 28 : 24,
                       ),
-                      const SizedBox(height: 4),
-                      Text(
-                        _formatDate(widget.post.createdAt),
-                        style: const TextStyle(color: Colors.grey),
+                      itemBuilder: (context) => [
+                        const PopupMenuItem(value: '1d', child: Text('Last 24 hours')),
+                        const PopupMenuItem(value: '7d', child: Text('Last 7 days')),
+                        const PopupMenuItem(value: '30d', child: Text('Last 30 days')),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              SliverToBoxAdapter(
+                child: Container(
+                  margin: EdgeInsets.all(isTablet ? 24 : 16),
+                  padding: EdgeInsets.all(isTablet ? 20 : 16),
+                  decoration: BoxDecoration(
+                    color: AppColors.surface,
+                    borderRadius: BorderRadius.circular(isTablet ? 20 : 16),
+                    border: Border.all(color: AppColors.border),
+                    boxShadow: [
+                      BoxShadow(
+                        color: AppColors.primary.withOpacity(0.05),
+                        blurRadius: isTablet ? 15 : 10,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
+                  ),
+                  child: Row(
+                    children: [
+                      Container(
+                        width: isTablet ? 80 : 60,
+                        height: isTablet ? 80 : 60,
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(isTablet ? 16 : 12),
+                          border: Border.all(color: AppColors.border),
+                          image: DecorationImage(
+                            image: NetworkImage(widget.post.media.first.url),
+                            fit: BoxFit.cover,
+                          ),
+                        ),
+                      ),
+                      SizedBox(width: isTablet ? 16 : 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              widget.post.caption.length > 50
+                                  ? '${widget.post.caption.substring(0, 50)}...'
+                                  : widget.post.caption,
+                              style: TextStyle(
+                                fontWeight: FontWeight.w700,
+                                fontSize: isTablet ? 16 : 14,
+                                color: AppColors.textPrimary,
+                              ),
+                            ),
+                            SizedBox(height: isTablet ? 6 : 4),
+                            Text(
+                              _formatDate(widget.post.createdAt),
+                              style: TextStyle(
+                                color: AppColors.textSecondary,
+                                fontSize: isTablet ? 14 : 12,
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     ],
                   ),
                 ),
-              ],
-            ),
-          ),
-
-          // Tab Bar
-          TabBar(
-            controller: _tabController,
-            labelColor: Colors.black,
-            unselectedLabelColor: Colors.grey,
-            tabs: const [
-              Tab(text: 'Overview'),
-              Tab(text: 'Audience'),
-              Tab(text: 'Promotion'),
+              ),
+              SliverToBoxAdapter(
+                child: Container(
+                  margin: EdgeInsets.symmetric(
+                    horizontal: isTablet ? 24 : 16,
+                  ),
+                  decoration: BoxDecoration(
+                    color: AppColors.surface,
+                    borderRadius: BorderRadius.circular(isTablet ? 16 : 12),
+                    border: Border.all(color: AppColors.border),
+                  ),
+                  child: TabBar(
+                    controller: _tabController,
+                    indicator: BoxDecoration(
+                      gradient: AppColors.primaryGradient,
+                      borderRadius: BorderRadius.circular(isTablet ? 16 : 12),
+                    ),
+                    labelColor: Colors.white,
+                    unselectedLabelColor: AppColors.textSecondary,
+                    labelStyle: TextStyle(
+                      fontSize: isTablet ? 16 : 14,
+                      fontWeight: FontWeight.w700,
+                    ),
+                    tabs: const [
+                      Tab(text: 'Overview'),
+                      Tab(text: 'Audience'),
+                      Tab(text: 'Promotion'),
+                    ],
+                  ),
+                ),
+              ),
+              SliverFillRemaining(
+                child: TabBarView(
+                  controller: _tabController,
+                  children: [
+                    _buildOverviewTab(isTablet),
+                    _buildAudienceTab(isTablet),
+                    _buildPromotionTab(isTablet),
+                  ],
+                ),
+              ),
             ],
-          ),
-
-          // Tab Content
-          Expanded(
-            child: TabBarView(
-              controller: _tabController,
-              children: [
-                _buildOverviewTab(),
-                _buildAudienceTab(),
-                _buildPromotionTab(),
-              ],
-            ),
-          ),
-        ],
+          );
+        },
       ),
     );
   }
 
-  Widget _buildOverviewTab() {
+  Widget _buildOverviewTab(bool isTablet) {
     return SingleChildScrollView(
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.all(isTablet ? 24 : 16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Key Metrics
           Row(
             children: [
-              Expanded(child: _buildMetricCard('Likes', widget.post.insights.likes, Icons.favorite)),
-              const SizedBox(width: 12),
-              Expanded(child: _buildMetricCard('Comments', widget.post.insights.comments, Icons.comment)),
+              Expanded(child: _buildMetricCard('Likes', widget.post.insights.likes, Icons.favorite, isTablet: isTablet)),
+              SizedBox(width: isTablet ? 16 : 12),
+              Expanded(child: _buildMetricCard('Comments', widget.post.insights.comments, Icons.comment, isTablet: isTablet)),
             ],
           ),
-          const SizedBox(height: 12),
+          SizedBox(height: isTablet ? 16 : 12),
           Row(
             children: [
-              Expanded(child: _buildMetricCard('Shares', widget.post.insights.shares, Icons.share)),
-              const SizedBox(width: 12),
-              Expanded(child: _buildMetricCard('Saves', widget.post.insights.saves, Icons.bookmark)),
+              Expanded(child: _buildMetricCard('Shares', widget.post.insights.shares, Icons.share, isTablet: isTablet)),
+              SizedBox(width: isTablet ? 16 : 12),
+              Expanded(child: _buildMetricCard('Saves', widget.post.insights.saves, Icons.bookmark, isTablet: isTablet)),
             ],
           ),
           const SizedBox(height: 24),
@@ -203,9 +303,9 @@ class _PostInsightsPageState extends State<PostInsightsPage>
     );
   }
 
-  Widget _buildAudienceTab() {
+  Widget _buildAudienceTab(bool isTablet) {
     return SingleChildScrollView(
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.all(isTablet ? 24 : 16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -243,7 +343,7 @@ class _PostInsightsPageState extends State<PostInsightsPage>
     );
   }
 
-  Widget _buildPromotionTab() {
+  Widget _buildPromotionTab(bool isTablet) {
     if (widget.post.promotion == null) {
       return Center(
         child: Column(
@@ -314,30 +414,60 @@ class _PostInsightsPageState extends State<PostInsightsPage>
     );
   }
 
-  Widget _buildMetricCard(String title, dynamic value, IconData icon, {String? subtitle}) {
+  Widget _buildMetricCard(String title, dynamic value, IconData icon, {String? subtitle, bool isTablet = false}) {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.all(isTablet ? 20 : 16),
       decoration: BoxDecoration(
-        color: Colors.grey[100],
-        borderRadius: BorderRadius.circular(12),
+        gradient: AppColors.primaryGradient.scale(0.05),
+        borderRadius: BorderRadius.circular(isTablet ? 16 : 12),
+        border: Border.all(color: AppColors.border),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: isTablet ? 10 : 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              Icon(icon, size: 20, color: Colors.grey[600]),
-              const SizedBox(width: 8),
-              Text(title, style: TextStyle(color: Colors.grey[600], fontSize: 12)),
+              Icon(
+                icon,
+                size: isTablet ? 24 : 20,
+                color: AppColors.primary,
+              ),
+              SizedBox(width: isTablet ? 10 : 8),
+              Text(
+                title,
+                style: TextStyle(
+                  color: AppColors.textSecondary,
+                  fontSize: isTablet ? 14 : 12,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
             ],
           ),
-          const SizedBox(height: 8),
+          SizedBox(height: isTablet ? 12 : 8),
           Text(
             value.toString(),
-            style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+            style: TextStyle(
+              fontSize: isTablet ? 28 : 24,
+              fontWeight: FontWeight.w800,
+              color: AppColors.textPrimary,
+            ),
           ),
           if (subtitle != null)
-            Text(subtitle, style: TextStyle(color: Colors.grey[600], fontSize: 12)),
+            Text(
+              subtitle,
+              style: TextStyle(
+                color: AppColors.textSecondary,
+                fontSize: isTablet ? 14 : 12,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
         ],
       ),
     );

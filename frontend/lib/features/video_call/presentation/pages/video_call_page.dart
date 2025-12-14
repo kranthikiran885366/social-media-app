@@ -83,32 +83,37 @@ class _VideoCallPageState extends State<VideoCallPage>
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.black,
-      body: GestureDetector(
-        onTap: () {
-          if (_isCallConnected) {
-            if (_showControls) {
-              _hideControls();
-            } else {
-              _showControls();
-            }
-          }
+      body: LayoutBuilder(
+        builder: (context, constraints) {
+          final isTablet = constraints.maxWidth > 600;
+          return GestureDetector(
+            onTap: () {
+              if (_isCallConnected) {
+                if (_showControls) {
+                  _hideControls();
+                } else {
+                  _showControls();
+                }
+              }
+            },
+            child: Stack(
+              children: [
+                _buildVideoBackground(isTablet),
+                _buildTopBar(isTablet),
+                _buildBottomControls(isTablet),
+                if (widget.isIncoming && !_isCallConnected)
+                  _buildIncomingCallOverlay(isTablet),
+                if (_isCallConnected && _isVideoEnabled)
+                  _buildSelfVideoPreview(isTablet),
+              ],
+            ),
+          );
         },
-        child: Stack(
-          children: [
-            _buildVideoBackground(),
-            _buildTopBar(),
-            _buildBottomControls(),
-            if (widget.isIncoming && !_isCallConnected)
-              _buildIncomingCallOverlay(),
-            if (_isCallConnected && _isVideoEnabled)
-              _buildSelfVideoPreview(),
-          ],
-        ),
       ),
     );
   }
 
-  Widget _buildVideoBackground() {
+  Widget _buildVideoBackground(bool isTablet) {
     return Container(
       width: double.infinity,
       height: double.infinity,
@@ -117,8 +122,8 @@ class _VideoCallPageState extends State<VideoCallPage>
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
           colors: [
-            Colors.black.withOpacity(0.8),
-            AppColors.primary.withOpacity(0.3),
+            Colors.black.withOpacity(0.7),
+            AppColors.primary.withOpacity(0.2),
             Colors.black.withOpacity(0.9),
           ],
         ),
@@ -144,44 +149,59 @@ class _VideoCallPageState extends State<VideoCallPage>
                       return Transform.scale(
                         scale: widget.isIncoming ? 1.0 : _pulseAnimation.value,
                         child: Container(
-                          width: 200,
-                          height: 200,
+                          width: isTablet ? 280 : 220,
+                          height: isTablet ? 280 : 220,
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
                             gradient: AppColors.primaryGradient,
                             boxShadow: [
                               BoxShadow(
                                 color: AppColors.primary.withOpacity(0.4),
-                                blurRadius: 30,
-                                spreadRadius: 10,
+                                blurRadius: isTablet ? 40 : 30,
+                                spreadRadius: isTablet ? 15 : 10,
                               ),
                             ],
                           ),
-                          padding: const EdgeInsets.all(8),
+                          padding: EdgeInsets.all(isTablet ? 12 : 8),
                           child: CircleAvatar(
-                            radius: 96,
+                            radius: isTablet ? 134 : 106,
                             backgroundImage: NetworkImage(widget.participantAvatar),
                           ),
                         ),
                       );
                     },
                   ),
-                  const SizedBox(height: 40),
+                  SizedBox(height: isTablet ? 56 : 40),
                   Text(
                     widget.participantName,
-                    style: const TextStyle(
+                    style: TextStyle(
                       color: Colors.white,
-                      fontSize: 28,
-                      fontWeight: FontWeight.w700,
+                      fontSize: isTablet ? 36 : 28,
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: -0.5,
                     ),
                   ),
-                  const SizedBox(height: 12),
-                  Text(
-                    _getCallStatusText(),
-                    style: TextStyle(
-                      color: Colors.white.withOpacity(0.8),
-                      fontSize: 16,
-                      fontWeight: FontWeight.w500,
+                  SizedBox(height: isTablet ? 16 : 12),
+                  Container(
+                    padding: EdgeInsets.symmetric(
+                      horizontal: isTablet ? 20 : 16,
+                      vertical: isTablet ? 8 : 6,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Colors.black.withOpacity(0.4),
+                      borderRadius: BorderRadius.circular(isTablet ? 20 : 16),
+                      border: Border.all(
+                        color: Colors.white.withOpacity(0.2),
+                        width: 1,
+                      ),
+                    ),
+                    child: Text(
+                      _getCallStatusText(),
+                      style: TextStyle(
+                        color: Colors.white.withOpacity(0.9),
+                        fontSize: isTablet ? 18 : 16,
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
                   ),
                 ],
@@ -190,7 +210,7 @@ class _VideoCallPageState extends State<VideoCallPage>
     );
   }
 
-  Widget _buildTopBar() {
+  Widget _buildTopBar(bool isTablet) {
     return SafeArea(
       child: AnimatedBuilder(
         animation: _fadeAnimation,
@@ -198,7 +218,7 @@ class _VideoCallPageState extends State<VideoCallPage>
           return Opacity(
             opacity: _showControls ? 1.0 : _fadeAnimation.value,
             child: Container(
-              padding: const EdgeInsets.all(20),
+              padding: EdgeInsets.all(isTablet ? 28 : 20),
               decoration: BoxDecoration(
                 gradient: LinearGradient(
                   begin: Alignment.topCenter,
@@ -213,28 +233,43 @@ class _VideoCallPageState extends State<VideoCallPage>
                 children: [
                   Container(
                     decoration: BoxDecoration(
-                      color: Colors.black.withOpacity(0.5),
-                      borderRadius: BorderRadius.circular(12),
+                      color: Colors.black.withOpacity(0.6),
+                      borderRadius: BorderRadius.circular(isTablet ? 16 : 12),
+                      border: Border.all(
+                        color: Colors.white.withOpacity(0.2),
+                        width: 1,
+                      ),
                     ),
                     child: IconButton(
-                      icon: const Icon(Icons.arrow_back_rounded, color: Colors.white),
+                      icon: Icon(
+                        Icons.arrow_back_rounded,
+                        color: Colors.white,
+                        size: isTablet ? 28 : 24,
+                      ),
                       onPressed: () => Navigator.pop(context),
                     ),
                   ),
                   const Spacer(),
                   if (_isCallConnected)
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                      padding: EdgeInsets.symmetric(
+                        horizontal: isTablet ? 20 : 16,
+                        vertical: isTablet ? 12 : 8,
+                      ),
                       decoration: BoxDecoration(
-                        color: Colors.black.withOpacity(0.5),
-                        borderRadius: BorderRadius.circular(20),
+                        color: Colors.black.withOpacity(0.6),
+                        borderRadius: BorderRadius.circular(isTablet ? 24 : 20),
+                        border: Border.all(
+                          color: Colors.white.withOpacity(0.2),
+                          width: 1,
+                        ),
                       ),
                       child: Text(
                         _formatDuration(_callDuration),
-                        style: const TextStyle(
+                        style: TextStyle(
                           color: Colors.white,
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
+                          fontSize: isTablet ? 18 : 16,
+                          fontWeight: FontWeight.w700,
                         ),
                       ),
                     ),
@@ -258,7 +293,7 @@ class _VideoCallPageState extends State<VideoCallPage>
     );
   }
 
-  Widget _buildBottomControls() {
+  Widget _buildBottomControls(bool isTablet) {
     return Positioned(
       bottom: 0,
       left: 0,
@@ -270,7 +305,7 @@ class _VideoCallPageState extends State<VideoCallPage>
             return Opacity(
               opacity: _showControls ? 1.0 : _fadeAnimation.value,
               child: Container(
-                padding: const EdgeInsets.all(24),
+                padding: EdgeInsets.all(isTablet ? 32 : 24),
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
                     begin: Alignment.bottomCenter,
@@ -287,6 +322,7 @@ class _VideoCallPageState extends State<VideoCallPage>
                     _buildControlButton(
                       icon: _isSpeakerOn ? Icons.volume_up_rounded : Icons.volume_down_rounded,
                       isActive: _isSpeakerOn,
+                      isTablet: isTablet,
                       onTap: () {
                         setState(() {
                           _isSpeakerOn = !_isSpeakerOn;
@@ -296,6 +332,7 @@ class _VideoCallPageState extends State<VideoCallPage>
                     _buildControlButton(
                       icon: _isVideoEnabled ? Icons.videocam_rounded : Icons.videocam_off_rounded,
                       isActive: _isVideoEnabled,
+                      isTablet: isTablet,
                       onTap: () {
                         setState(() {
                           _isVideoEnabled = !_isVideoEnabled;
@@ -305,6 +342,7 @@ class _VideoCallPageState extends State<VideoCallPage>
                     _buildControlButton(
                       icon: _isMuted ? Icons.mic_off_rounded : Icons.mic_rounded,
                       isActive: !_isMuted,
+                      isTablet: isTablet,
                       onTap: () {
                         setState(() {
                           _isMuted = !_isMuted;
@@ -315,6 +353,7 @@ class _VideoCallPageState extends State<VideoCallPage>
                       icon: Icons.call_end_rounded,
                       isActive: false,
                       isEndCall: true,
+                      isTablet: isTablet,
                       onTap: _endCall,
                     ),
                   ],
@@ -331,6 +370,7 @@ class _VideoCallPageState extends State<VideoCallPage>
     required IconData icon,
     required bool isActive,
     required VoidCallback onTap,
+    required bool isTablet,
     bool isEndCall = false,
   }) {
     return GestureDetector(
@@ -339,47 +379,50 @@ class _VideoCallPageState extends State<VideoCallPage>
         onTap();
       },
       child: Container(
-        width: 64,
-        height: 64,
+        width: isTablet ? 80 : 64,
+        height: isTablet ? 80 : 64,
         decoration: BoxDecoration(
-          color: isEndCall
-              ? Colors.red
+          gradient: isEndCall
+              ? LinearGradient(colors: [Colors.red, Colors.red.withOpacity(0.8)])
               : isActive
-                  ? Colors.white.withOpacity(0.2)
-                  : Colors.black.withOpacity(0.5),
+                  ? AppColors.primaryGradient.scale(0.3)
+                  : null,
+          color: isEndCall || isActive ? null : Colors.black.withOpacity(0.6),
           shape: BoxShape.circle,
           border: Border.all(
             color: isEndCall
-                ? Colors.red
+                ? Colors.red.withOpacity(0.8)
                 : isActive
-                    ? Colors.white.withOpacity(0.5)
-                    : Colors.white.withOpacity(0.3),
-            width: 2,
+                    ? Colors.white.withOpacity(0.6)
+                    : Colors.white.withOpacity(0.4),
+            width: isTablet ? 3 : 2,
           ),
           boxShadow: [
             BoxShadow(
               color: isEndCall
                   ? Colors.red.withOpacity(0.4)
-                  : Colors.black.withOpacity(0.3),
-              blurRadius: 10,
-              offset: const Offset(0, 4),
+                  : isActive
+                      ? AppColors.primary.withOpacity(0.3)
+                      : Colors.black.withOpacity(0.3),
+              blurRadius: isTablet ? 15 : 10,
+              offset: const Offset(0, 6),
             ),
           ],
         ),
         child: Icon(
           icon,
           color: Colors.white,
-          size: 28,
+          size: isTablet ? 36 : 28,
         ),
       ),
     );
   }
 
-  Widget _buildIncomingCallOverlay() {
+  Widget _buildIncomingCallOverlay(bool isTablet) {
     return Container(
       width: double.infinity,
       height: double.infinity,
-      color: Colors.black.withOpacity(0.8),
+      color: Colors.black.withOpacity(0.9),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.end,
         children: [
@@ -388,68 +431,70 @@ class _VideoCallPageState extends State<VideoCallPage>
             'Incoming video call',
             style: TextStyle(
               color: Colors.white.withOpacity(0.8),
-              fontSize: 16,
-              fontWeight: FontWeight.w500,
+              fontSize: isTablet ? 18 : 16,
+              fontWeight: FontWeight.w600,
             ),
           ),
-          const SizedBox(height: 12),
+          SizedBox(height: isTablet ? 16 : 12),
           Text(
             widget.participantName,
-            style: const TextStyle(
+            style: TextStyle(
               color: Colors.white,
-              fontSize: 28,
-              fontWeight: FontWeight.w700,
+              fontSize: isTablet ? 36 : 28,
+              fontWeight: FontWeight.w800,
             ),
           ),
           const Spacer(),
           Padding(
-            padding: const EdgeInsets.all(40),
+            padding: EdgeInsets.all(isTablet ? 56 : 40),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
                 GestureDetector(
                   onTap: _declineCall,
                   child: Container(
-                    width: 80,
-                    height: 80,
+                    width: isTablet ? 100 : 80,
+                    height: isTablet ? 100 : 80,
                     decoration: BoxDecoration(
-                      color: Colors.red,
+                      gradient: LinearGradient(
+                        colors: [Colors.red, Colors.red.withOpacity(0.8)],
+                      ),
                       shape: BoxShape.circle,
                       boxShadow: [
                         BoxShadow(
                           color: Colors.red.withOpacity(0.4),
-                          blurRadius: 15,
+                          blurRadius: isTablet ? 20 : 15,
                           offset: const Offset(0, 8),
                         ),
                       ],
                     ),
-                    child: const Icon(
+                    child: Icon(
                       Icons.call_end_rounded,
                       color: Colors.white,
-                      size: 36,
+                      size: isTablet ? 44 : 36,
                     ),
                   ),
                 ),
                 GestureDetector(
                   onTap: _acceptCall,
                   child: Container(
-                    width: 80,
-                    height: 80,
+                    width: isTablet ? 100 : 80,
+                    height: isTablet ? 100 : 80,
                     decoration: BoxDecoration(
                       gradient: AppColors.primaryGradient,
                       shape: BoxShape.circle,
                       boxShadow: [
                         BoxShadow(
                           color: AppColors.primary.withOpacity(0.4),
-                          blurRadius: 15,
+                          blurRadius: isTablet ? 20 : 15,
                           offset: const Offset(0, 8),
                         ),
                       ],
                     ),
-                    child: const Icon(
+                    child: Icon(
                       Icons.call_rounded,
                       color: Colors.white,
-                      size: 36,
+                      size: isTablet ? 44 : 36,
                     ),
                   ),
                 ),
@@ -462,34 +507,37 @@ class _VideoCallPageState extends State<VideoCallPage>
     );
   }
 
-  Widget _buildSelfVideoPreview() {
+  Widget _buildSelfVideoPreview(bool isTablet) {
     return Positioned(
-      top: 100,
-      right: 20,
+      top: isTablet ? 140 : 100,
+      right: isTablet ? 32 : 20,
       child: Container(
-        width: 120,
-        height: 160,
+        width: isTablet ? 160 : 120,
+        height: isTablet ? 200 : 160,
         decoration: BoxDecoration(
           color: Colors.grey[900],
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: Colors.white.withOpacity(0.3), width: 2),
+          borderRadius: BorderRadius.circular(isTablet ? 20 : 16),
+          border: Border.all(
+            color: Colors.white.withOpacity(0.4),
+            width: isTablet ? 3 : 2,
+          ),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.5),
-              blurRadius: 10,
-              offset: const Offset(0, 4),
+              color: Colors.black.withOpacity(0.6),
+              blurRadius: isTablet ? 15 : 10,
+              offset: const Offset(0, 6),
             ),
           ],
         ),
         child: ClipRRect(
-          borderRadius: BorderRadius.circular(14),
+          borderRadius: BorderRadius.circular(isTablet ? 17 : 14),
           child: Container(
             color: Colors.grey[800],
-            child: const Center(
+            child: Center(
               child: Icon(
                 Icons.person_rounded,
                 color: Colors.white54,
-                size: 40,
+                size: isTablet ? 56 : 40,
               ),
             ),
           ),

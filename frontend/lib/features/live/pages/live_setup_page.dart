@@ -194,7 +194,7 @@ class _LiveSetupPageState extends State<LiveSetupPage> {
     Navigator.pushReplacement(
       context,
       MaterialPageRoute(
-        builder: (context) => const LiveStreamPage(isHost: true),
+        builder: (context) => const LiveStreamPage(),
       ),
     );
   }

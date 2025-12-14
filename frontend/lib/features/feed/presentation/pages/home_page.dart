@@ -3,11 +3,11 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../bloc/feed_bloc.dart';
-import '../widgets/post_card.dart';
+// import '../widgets/post_card.dart';
 import '../widgets/enhanced_post_card.dart';
 import '../widgets/suggested_users_widget.dart';
 import '../widgets/sponsored_post_card.dart';
-import '../widgets/time_limit_banner.dart';
+// import '../widgets/time_limit_banner.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -134,8 +134,10 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   }
 
   PreferredSizeWidget _buildAppBar() {
-    return LayoutBuilder(
-      builder: (context, constraints) {
+    return PreferredSize(
+      preferredSize: const Size.fromHeight(56),
+      child: LayoutBuilder(
+        builder: (context, constraints) {
         final isTablet = constraints.maxWidth > 600;
         return AppBar(
           backgroundColor: AppColors.background,
@@ -193,7 +195,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
             ),
           ],
         );
-      },
+      }),
     );
   }
 

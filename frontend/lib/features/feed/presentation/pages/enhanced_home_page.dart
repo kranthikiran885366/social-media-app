@@ -3,7 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../bloc/feed_bloc.dart';
 import '../widgets/enhanced_post_card.dart';
-import '../widgets/enhanced_stories_bar.dart';
+// import '../widgets/enhanced_stories_bar.dart';
 import '../widgets/time_limit_banner.dart';
 
 class EnhancedHomePage extends StatefulWidget {
@@ -162,7 +162,7 @@ class _EnhancedHomePageState extends State<EnhancedHomePage>
             bottom: BorderSide(color: Color(0xFFE5E5E5), width: 0.5),
           ),
         ),
-        child: const EnhancedStoriesBar(),
+        child: const SizedBox.shrink(), // EnhancedStoriesBar()
       ),
     );
   }

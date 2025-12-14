@@ -108,6 +108,7 @@ class MediaAdjustments extends Equatable {
   final double warmth;
   final double highlights;
   final double shadows;
+  final double vignette;
 
   const MediaAdjustments({
     this.brightness = 0.0,
@@ -116,10 +117,31 @@ class MediaAdjustments extends Equatable {
     this.warmth = 0.0,
     this.highlights = 0.0,
     this.shadows = 0.0,
+    this.vignette = 0.0,
   });
 
+  MediaAdjustments copyWith({
+    double? brightness,
+    double? contrast,
+    double? saturation,
+    double? warmth,
+    double? highlights,
+    double? shadows,
+    double? vignette,
+  }) {
+    return MediaAdjustments(
+      brightness: brightness ?? this.brightness,
+      contrast: contrast ?? this.contrast,
+      saturation: saturation ?? this.saturation,
+      warmth: warmth ?? this.warmth,
+      highlights: highlights ?? this.highlights,
+      shadows: shadows ?? this.shadows,
+      vignette: vignette ?? this.vignette,
+    );
+  }
+
   @override
-  List<Object?> get props => [brightness, contrast, saturation, warmth];
+  List<Object?> get props => [brightness, contrast, saturation, warmth, highlights, shadows, vignette];
 }
 
 class PostLocation extends Equatable {

@@ -333,14 +333,14 @@ class _EnhancedPostEditorPageState extends State<EnhancedPostEditorPage>
 
   Widget _buildFiltersTab() {
     final filters = [
-      PostFilter(name: 'Original', intensity: 0.0),
-      PostFilter(name: 'Vintage', intensity: 0.8),
-      PostFilter(name: 'Dramatic', intensity: 0.9),
-      PostFilter(name: 'Bright', intensity: 0.7),
-      PostFilter(name: 'Warm', intensity: 0.6),
-      PostFilter(name: 'Cool', intensity: 0.5),
-      PostFilter(name: 'Noir', intensity: 1.0),
-      PostFilter(name: 'Vivid', intensity: 0.8),
+      PostFilter(id: 'original', name: 'Original', intensity: 0.0),
+      PostFilter(id: 'vintage', name: 'Vintage', intensity: 0.8),
+      PostFilter(id: 'dramatic', name: 'Dramatic', intensity: 0.9),
+      PostFilter(id: 'bright', name: 'Bright', intensity: 0.7),
+      PostFilter(id: 'warm', name: 'Warm', intensity: 0.6),
+      PostFilter(id: 'cool', name: 'Cool', intensity: 0.5),
+      PostFilter(id: 'noir', name: 'Noir', intensity: 1.0),
+      PostFilter(id: 'vivid', name: 'Vivid', intensity: 0.8),
     ];
 
     return Container(

@@ -3,6 +3,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:camera/camera.dart';
 import 'package:video_player/video_player.dart';
 import 'dart:io';
+import '../../../../core/theme/app_colors.dart';
 
 class CreatePostPage extends StatefulWidget {
   const CreatePostPage({super.key});
@@ -37,114 +38,166 @@ class _CreatePostPageState extends State<CreatePostPage>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.close, color: Colors.black),
-          onPressed: () => Navigator.pop(context),
-        ),
-        title: const Text(
-          'New post',
-          style: TextStyle(
-            color: Colors.black,
-            fontSize: 16,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-        centerTitle: true,
-        actions: [
-          TextButton(
-            onPressed: _selectedMedia.isNotEmpty ? _sharePost : null,
-            child: Text(
-              'Share',
-              style: TextStyle(
-                color: _selectedMedia.isNotEmpty ? const Color(0xFF0095F6) : const Color(0xFF8E8E8E),
-                fontSize: 16,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ),
-        ],
-        bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(48),
-          child: Container(
-            decoration: const BoxDecoration(
-              border: Border(
-                bottom: BorderSide(
-                  color: Color(0xFFDBDBDB),
-                  width: 0.5,
+      backgroundColor: AppColors.background,
+      body: LayoutBuilder(
+        builder: (context, constraints) {
+          final isTablet = constraints.maxWidth > 600;
+          return CustomScrollView(
+            slivers: [
+              SliverAppBar(
+                backgroundColor: AppColors.background,
+                elevation: 0,
+                floating: true,
+                snap: true,
+                expandedHeight: isTablet ? 120 : 100,
+                flexibleSpace: FlexibleSpaceBar(
+                  background: Container(
+                    decoration: BoxDecoration(
+                      gradient: AppColors.primaryGradient.scale(0.1),
+                    ),
+                  ),
+                  title: Text(
+                    'New Post',
+                    style: TextStyle(
+                      color: AppColors.textPrimary,
+                      fontSize: isTablet ? 24 : 18,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  centerTitle: true,
+                ),
+                leading: Container(
+                  margin: EdgeInsets.only(
+                    left: isTablet ? 24 : 16,
+                    top: isTablet ? 12 : 8,
+                  ),
+                  decoration: BoxDecoration(
+                    color: AppColors.surface,
+                    borderRadius: BorderRadius.circular(isTablet ? 16 : 12),
+                    border: Border.all(color: AppColors.border),
+                  ),
+                  child: IconButton(
+                    icon: Icon(
+                      Icons.close,
+                      color: AppColors.textPrimary,
+                      size: isTablet ? 28 : 24,
+                    ),
+                    onPressed: () => Navigator.pop(context),
+                  ),
+                ),
+                actions: [
+                  Container(
+                    margin: EdgeInsets.only(
+                      right: isTablet ? 24 : 16,
+                      top: isTablet ? 12 : 8,
+                    ),
+                    height: isTablet ? 48 : 40,
+                    decoration: BoxDecoration(
+                      gradient: _selectedMedia.isNotEmpty ? AppColors.primaryGradient : null,
+                      color: _selectedMedia.isEmpty ? AppColors.surface : null,
+                      borderRadius: BorderRadius.circular(isTablet ? 16 : 12),
+                      border: Border.all(color: AppColors.border),
+                    ),
+                    child: TextButton(
+                      onPressed: _selectedMedia.isNotEmpty ? _sharePost : null,
+                      child: Text(
+                        'Share',
+                        style: TextStyle(
+                          color: _selectedMedia.isNotEmpty ? Colors.white : AppColors.textTertiary,
+                          fontSize: isTablet ? 16 : 14,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+                bottom: PreferredSize(
+                  preferredSize: Size.fromHeight(isTablet ? 60 : 48),
+                  child: Container(
+                    margin: EdgeInsets.symmetric(
+                      horizontal: isTablet ? 24 : 16,
+                    ),
+                    decoration: BoxDecoration(
+                      color: AppColors.surface,
+                      borderRadius: BorderRadius.circular(isTablet ? 16 : 12),
+                      border: Border.all(color: AppColors.border),
+                    ),
+                    child: TabBar(
+                      controller: _tabController,
+                      indicator: BoxDecoration(
+                        gradient: AppColors.primaryGradient,
+                        borderRadius: BorderRadius.circular(isTablet ? 16 : 12),
+                      ),
+                      labelColor: Colors.white,
+                      unselectedLabelColor: AppColors.textSecondary,
+                      labelStyle: TextStyle(
+                        fontSize: isTablet ? 16 : 14,
+                        fontWeight: FontWeight.w700,
+                      ),
+                      tabs: const [
+                        Tab(text: 'Library'),
+                        Tab(text: 'Photo'),
+                        Tab(text: 'Video'),
+                      ],
+                    ),
+                  ),
                 ),
               ),
-            ),
-            child: TabBar(
-              controller: _tabController,
-              indicatorColor: Colors.black,
-              indicatorWeight: 1,
-              labelColor: Colors.black,
-              unselectedLabelColor: const Color(0xFF8E8E8E),
-              labelStyle: const TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
+              SliverFillRemaining(
+                child: Column(
+                  children: [
+                    Expanded(
+                      child: TabBarView(
+                        controller: _tabController,
+                        children: [
+                          _buildLibraryTab(isTablet),
+                          _buildCameraTab(false, isTablet),
+                          _buildCameraTab(true, isTablet),
+                        ],
+                      ),
+                    ),
+                    if (_selectedMedia.isNotEmpty) _buildPostComposer(isTablet),
+                  ],
+                ),
               ),
-              tabs: const [
-                Tab(text: 'Library'),
-                Tab(text: 'Photo'),
-                Tab(text: 'Video'),
-              ],
-            ),
-          ),
-        ),
-      ),
-      body: Column(
-        children: [
-          Expanded(
-            child: TabBarView(
-              controller: _tabController,
-              children: [
-                _buildLibraryTab(),
-                _buildCameraTab(false),
-                _buildCameraTab(true),
-              ],
-            ),
-          ),
-          if (_selectedMedia.isNotEmpty) _buildPostComposer(),
-        ],
+            ],
+          );
+        },
       ),
     );
   }
 
-  Widget _buildLibraryTab() {
+  Widget _buildLibraryTab(bool isTablet) {
     return Column(
       children: [
-        if (_selectedMedia.isNotEmpty) _buildSelectedMediaPreview(),
+        if (_selectedMedia.isNotEmpty) _buildSelectedMediaPreview(isTablet),
         Expanded(
           child: GridView.builder(
-            padding: const EdgeInsets.all(8),
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 3,
-              crossAxisSpacing: 2,
-              mainAxisSpacing: 2,
+            padding: EdgeInsets.all(isTablet ? 16 : 8),
+            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: isTablet ? 4 : 3,
+              crossAxisSpacing: isTablet ? 8 : 4,
+              mainAxisSpacing: isTablet ? 8 : 4,
             ),
-            itemCount: 50, // Mock gallery items
+            itemCount: 50,
             itemBuilder: (context, index) {
               return GestureDetector(
                 onTap: () => _selectFromGallery(),
                 child: Container(
                   decoration: BoxDecoration(
-                    color: const Color(0xFFF5F5F5),
-                    borderRadius: BorderRadius.circular(2),
+                    color: AppColors.backgroundSecondary,
+                    borderRadius: BorderRadius.circular(isTablet ? 12 : 8),
+                    border: Border.all(color: AppColors.border),
                   ),
                   child: ClipRRect(
-                    borderRadius: BorderRadius.circular(2),
+                    borderRadius: BorderRadius.circular(isTablet ? 12 : 8),
                     child: Image.network(
                       'https://picsum.photos/400/400?random=$index',
                       fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace) => const Icon(
+                      errorBuilder: (context, error, stackTrace) => Icon(
                         Icons.image,
-                        size: 40,
-                        color: Color(0xFF8E8E8E),
+                        size: isTablet ? 50 : 40,
+                        color: AppColors.textTertiary,
                       ),
                     ),
                   ),
@@ -157,9 +210,10 @@ class _CreatePostPageState extends State<CreatePostPage>
     );
   }
 
-  Widget _buildCameraTab(bool isVideo) {
+  Widget _buildCameraTab(bool isVideo, bool isTablet) {
     return CameraPreviewWidget(
       isVideo: isVideo,
+      isTablet: isTablet,
       onMediaCaptured: (XFile file) {
         setState(() {
           _selectedMedia = [file];
@@ -168,16 +222,21 @@ class _CreatePostPageState extends State<CreatePostPage>
     );
   }
 
-  Widget _buildSelectedMediaPreview() {
+  Widget _buildSelectedMediaPreview(bool isTablet) {
     return Container(
-      height: 300,
-      decoration: const BoxDecoration(
-        border: Border(
-          bottom: BorderSide(
-            color: Color(0xFFDBDBDB),
-            width: 0.5,
+      height: isTablet ? 400 : 300,
+      margin: EdgeInsets.all(isTablet ? 16 : 8),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(isTablet ? 20 : 16),
+        border: Border.all(color: AppColors.border),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: isTablet ? 15 : 10,
+            offset: const Offset(0, 4),
           ),
-        ),
+        ],
       ),
       child: Stack(
         children: [
@@ -221,40 +280,44 @@ class _CreatePostPageState extends State<CreatePostPage>
     );
   }
 
-  Widget _buildPostComposer() {
+  Widget _buildPostComposer(bool isTablet) {
     return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        border: Border(
-          top: BorderSide(
-            color: Color(0xFFDBDBDB),
-            width: 0.5,
+      margin: EdgeInsets.all(isTablet ? 24 : 16),
+      padding: EdgeInsets.all(isTablet ? 24 : 16),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(isTablet ? 20 : 16),
+        border: Border.all(color: AppColors.border),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.primary.withOpacity(0.05),
+            blurRadius: isTablet ? 15 : 10,
+            offset: const Offset(0, 4),
           ),
-        ),
+        ],
       ),
       child: Column(
         children: [
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const CircleAvatar(
-                radius: 16,
-                backgroundImage: NetworkImage('https://picsum.photos/100/100?random=user'),
+              CircleAvatar(
+                radius: isTablet ? 20 : 16,
+                backgroundImage: const NetworkImage('https://picsum.photos/100/100?random=user'),
               ),
-              const SizedBox(width: 12),
+              SizedBox(width: isTablet ? 16 : 12),
               Expanded(
                 child: TextField(
                   controller: _captionController,
-                  style: const TextStyle(
-                    fontSize: 14,
-                    color: Colors.black,
+                  style: TextStyle(
+                    fontSize: isTablet ? 16 : 14,
+                    color: AppColors.textPrimary,
                   ),
-                  decoration: const InputDecoration(
+                  decoration: InputDecoration(
                     hintText: 'Write a caption...',
                     hintStyle: TextStyle(
-                      color: Color(0xFF8E8E8E),
-                      fontSize: 14,
+                      color: AppColors.textTertiary,
+                      fontSize: isTablet ? 16 : 14,
                     ),
                     border: InputBorder.none,
                     contentPadding: EdgeInsets.zero,
@@ -264,21 +327,24 @@ class _CreatePostPageState extends State<CreatePostPage>
               ),
             ],
           ),
-          const SizedBox(height: 16),
+          SizedBox(height: isTablet ? 20 : 16),
           _buildComposerOption(
             icon: Icons.location_on_outlined,
             text: 'Add location',
-            onTap: () => _showLocationPicker(),
+            onTap: () => _showLocationPicker(isTablet),
+            isTablet: isTablet,
           ),
           _buildComposerOption(
             icon: Icons.person_add_outlined,
             text: 'Tag people',
-            onTap: _tagPeople,
+            onTap: () => _tagPeople(isTablet),
+            isTablet: isTablet,
           ),
           _buildComposerOption(
             icon: Icons.music_note_outlined,
             text: 'Add music',
-            onTap: _addMusic,
+            onTap: () => _addMusic(isTablet),
+            isTablet: isTablet,
           ),
         ],
       ),
@@ -289,38 +355,63 @@ class _CreatePostPageState extends State<CreatePostPage>
     required IconData icon,
     required String text,
     required VoidCallback onTap,
+    required bool isTablet,
   }) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 12),
-        child: Row(
-          children: [
-            Icon(
-              icon,
-              size: 24,
-              color: Colors.black,
+    return Container(
+      margin: EdgeInsets.only(bottom: isTablet ? 8 : 4),
+      decoration: BoxDecoration(
+        color: AppColors.backgroundSecondary,
+        borderRadius: BorderRadius.circular(isTablet ? 16 : 12),
+        border: Border.all(color: AppColors.border),
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(isTablet ? 16 : 12),
+          onTap: onTap,
+          child: Container(
+            padding: EdgeInsets.symmetric(
+              vertical: isTablet ? 16 : 12,
+              horizontal: isTablet ? 16 : 12,
             ),
-            const SizedBox(width: 12),
-            Text(
-              text,
-              style: const TextStyle(
-                fontSize: 16,
-                color: Colors.black,
-              ),
+            child: Row(
+              children: [
+                Container(
+                  padding: EdgeInsets.all(isTablet ? 8 : 6),
+                  decoration: BoxDecoration(
+                    color: AppColors.primary.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(isTablet ? 12 : 8),
+                  ),
+                  child: Icon(
+                    icon,
+                    size: isTablet ? 24 : 20,
+                    color: AppColors.primary,
+                  ),
+                ),
+                SizedBox(width: isTablet ? 16 : 12),
+                Text(
+                  text,
+                  style: TextStyle(
+                    fontSize: isTablet ? 16 : 14,
+                    color: AppColors.textPrimary,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                const Spacer(),
+                Icon(
+                  Icons.chevron_right,
+                  color: AppColors.textTertiary,
+                  size: isTablet ? 24 : 20,
+                ),
+              ],
             ),
-            const Spacer(),
-            const Icon(
-              Icons.chevron_right,
-              color: Color(0xFF8E8E8E),
-            ),
-          ],
+          ),
         ),
       ),
     );
   }
 
-  void _showLocationPicker() {
+  void _showLocationPicker(bool isTablet) {
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.white,
@@ -381,7 +472,7 @@ class _CreatePostPageState extends State<CreatePostPage>
     }
   }
 
-  void _tagPeople() {
+  void _tagPeople(bool isTablet) {
     showModalBottomSheet(
       context: context,
       builder: (context) => Container(
@@ -427,7 +518,7 @@ class _CreatePostPageState extends State<CreatePostPage>
     );
   }
 
-  void _addMusic() {
+  void _addMusic(bool isTablet) {
     showModalBottomSheet(
       context: context,
       builder: (context) => Container(
@@ -558,11 +649,13 @@ class _CreatePostPageState extends State<CreatePostPage>
 
 class CameraPreviewWidget extends StatefulWidget {
   final bool isVideo;
+  final bool isTablet;
   final Function(XFile) onMediaCaptured;
 
   const CameraPreviewWidget({
     super.key,
     required this.isVideo,
+    required this.isTablet,
     required this.onMediaCaptured,
   });
 

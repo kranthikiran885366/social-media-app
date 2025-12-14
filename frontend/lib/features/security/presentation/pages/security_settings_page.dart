@@ -17,104 +17,156 @@ class _SecuritySettingsPageState extends State<SecuritySettingsPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
-      appBar: _buildAppBar(),
-      body: ListView(
-        padding: const EdgeInsets.all(16),
-        children: [
-          _buildSecurityOverview(),
-          const SizedBox(height: 24),
-          _buildSection('Authentication', [
-            _buildSwitchItem(
-              Icons.security,
-              'Two-Factor Authentication',
-              'Add an extra layer of security',
-              _twoFactorEnabled,
-              (value) => setState(() => _twoFactorEnabled = value),
-              AppColors.primary,
-            ),
-            _buildSwitchItem(
-              Icons.fingerprint,
-              'Biometric Login',
-              'Use fingerprint or face ID',
-              _biometricEnabled,
-              (value) => setState(() => _biometricEnabled = value),
-              AppColors.secondary,
-            ),
-          ]),
-          const SizedBox(height: 24),
-          _buildSection('Alerts & Monitoring', [
-            _buildSwitchItem(
-              Icons.notifications_active,
-              'Login Alerts',
-              'Get notified of new logins',
-              _loginAlertsEnabled,
-              (value) => setState(() => _loginAlertsEnabled = value),
-              AppColors.warning,
-            ),
-            _buildActionItem(
-              Icons.devices,
-              'Active Sessions',
-              'Manage logged in devices',
-              AppColors.info,
-            ),
-            _buildActionItem(
-              Icons.history,
-              'Login Activity',
-              'View recent login history',
-              AppColors.success,
-            ),
-          ]),
-          const SizedBox(height: 24),
-          _buildSection('Account Security', [
-            _buildActionItem(
-              Icons.lock_reset,
-              'Change Password',
-              'Update your password',
-              AppColors.primary,
-            ),
-            _buildActionItem(
-              Icons.download,
-              'Download Data',
-              'Get a copy of your data',
-              AppColors.secondary,
-            ),
-            _buildActionItem(
-              Icons.delete_forever,
-              'Delete Account',
-              'Permanently delete your account',
-              AppColors.error,
-            ),
-          ]),
-        ],
+      body: LayoutBuilder(
+        builder: (context, constraints) {
+          final isTablet = constraints.maxWidth > 600;
+          return CustomScrollView(
+            slivers: [
+              _buildAppBar(isTablet),
+              SliverPadding(
+                padding: EdgeInsets.all(isTablet ? 24 : 16),
+                sliver: SliverList(
+                  delegate: SliverChildListDelegate([
+                    _buildSecurityOverview(isTablet),
+                    SizedBox(height: isTablet ? 32 : 24),
+                    _buildSection('Authentication', [
+                      _buildSwitchItem(
+                        Icons.security,
+                        'Two-Factor Authentication',
+                        'Add an extra layer of security',
+                        _twoFactorEnabled,
+                        (value) => setState(() => _twoFactorEnabled = value),
+                        AppColors.primary,
+                        isTablet,
+                      ),
+                      _buildSwitchItem(
+                        Icons.fingerprint,
+                        'Biometric Login',
+                        'Use fingerprint or face ID',
+                        _biometricEnabled,
+                        (value) => setState(() => _biometricEnabled = value),
+                        AppColors.secondary,
+                        isTablet,
+                      ),
+                    ], isTablet),
+                    SizedBox(height: isTablet ? 32 : 24),
+                    _buildSection('Alerts & Monitoring', [
+                      _buildSwitchItem(
+                        Icons.notifications_active,
+                        'Login Alerts',
+                        'Get notified of new logins',
+                        _loginAlertsEnabled,
+                        (value) => setState(() => _loginAlertsEnabled = value),
+                        AppColors.warning,
+                        isTablet,
+                      ),
+                      _buildActionItem(
+                        Icons.devices,
+                        'Active Sessions',
+                        'Manage logged in devices',
+                        AppColors.info,
+                        isTablet,
+                      ),
+                      _buildActionItem(
+                        Icons.history,
+                        'Login Activity',
+                        'View recent login history',
+                        AppColors.success,
+                        isTablet,
+                      ),
+                    ], isTablet),
+                    SizedBox(height: isTablet ? 32 : 24),
+                    _buildSection('Account Security', [
+                      _buildActionItem(
+                        Icons.lock_reset,
+                        'Change Password',
+                        'Update your password',
+                        AppColors.primary,
+                        isTablet,
+                      ),
+                      _buildActionItem(
+                        Icons.download,
+                        'Download Data',
+                        'Get a copy of your data',
+                        AppColors.secondary,
+                        isTablet,
+                      ),
+                      _buildActionItem(
+                        Icons.delete_forever,
+                        'Delete Account',
+                        'Permanently delete your account',
+                        AppColors.error,
+                        isTablet,
+                      ),
+                    ], isTablet),
+                  ]),
+                ),
+              ),
+            ],
+          );
+        },
       ),
     );
   }
 
-  PreferredSizeWidget _buildAppBar() {
-    return AppBar(
+  Widget _buildAppBar(bool isTablet) {
+    return SliverAppBar(
       backgroundColor: AppColors.background,
       elevation: 0,
-      title: Text(
-        'Security',
-        style: TextStyle(
-          color: AppColors.textPrimary,
-          fontSize: 20,
-          fontWeight: FontWeight.w600,
+      floating: true,
+      snap: true,
+      expandedHeight: isTablet ? 120 : 100,
+      flexibleSpace: FlexibleSpaceBar(
+        background: Container(
+          decoration: BoxDecoration(
+            gradient: AppColors.primaryGradient.scale(0.1),
+          ),
         ),
+        title: Text(
+          'Security',
+          style: TextStyle(
+            color: AppColors.textPrimary,
+            fontSize: isTablet ? 24 : 20,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+        centerTitle: false,
       ),
-      leading: IconButton(
-        icon: Icon(Icons.arrow_back, color: AppColors.textPrimary),
-        onPressed: () => Navigator.pop(context),
+      leading: Container(
+        margin: EdgeInsets.only(
+          left: isTablet ? 24 : 16,
+          top: isTablet ? 12 : 8,
+        ),
+        decoration: BoxDecoration(
+          color: AppColors.surface,
+          borderRadius: BorderRadius.circular(isTablet ? 16 : 12),
+          border: Border.all(color: AppColors.border),
+        ),
+        child: IconButton(
+          icon: Icon(
+            Icons.arrow_back,
+            color: AppColors.textPrimary,
+            size: isTablet ? 28 : 24,
+          ),
+          onPressed: () => Navigator.pop(context),
+        ),
       ),
     );
   }
 
-  Widget _buildSecurityOverview() {
+  Widget _buildSecurityOverview(bool isTablet) {
     return Container(
-      padding: const EdgeInsets.all(20),
+      padding: EdgeInsets.all(isTablet ? 28 : 20),
       decoration: BoxDecoration(
         gradient: AppColors.primaryGradient,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(isTablet ? 24 : 16),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.primary.withOpacity(0.3),
+            blurRadius: isTablet ? 20 : 15,
+            offset: const Offset(0, 8),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -178,24 +230,37 @@ class _SecuritySettingsPageState extends State<SecuritySettingsPage> {
     );
   }
 
-  Widget _buildSection(String title, List<Widget> items) {
+  Widget _buildSection(String title, List<Widget> items, bool isTablet) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          title,
-          style: TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.w700,
-            color: AppColors.textPrimary,
+        Padding(
+          padding: EdgeInsets.only(
+            left: isTablet ? 8 : 4,
+            bottom: isTablet ? 16 : 12,
+          ),
+          child: Text(
+            title,
+            style: TextStyle(
+              fontSize: isTablet ? 22 : 18,
+              fontWeight: FontWeight.w800,
+              color: AppColors.textPrimary,
+              letterSpacing: -0.3,
+            ),
           ),
         ),
-        const SizedBox(height: 12),
         Container(
           decoration: BoxDecoration(
             color: AppColors.surface,
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: BorderRadius.circular(isTablet ? 20 : 16),
             border: Border.all(color: AppColors.border),
+            boxShadow: [
+              BoxShadow(
+                color: AppColors.primary.withOpacity(0.05),
+                blurRadius: isTablet ? 15 : 10,
+                offset: const Offset(0, 4),
+              ),
+            ],
           ),
           child: Column(children: items),
         ),
@@ -210,6 +275,7 @@ class _SecuritySettingsPageState extends State<SecuritySettingsPage> {
     bool value,
     Function(bool) onChanged,
     Color iconColor,
+    bool isTablet,
   ) {
     return Material(
       color: Colors.transparent,
@@ -261,7 +327,7 @@ class _SecuritySettingsPageState extends State<SecuritySettingsPage> {
     );
   }
 
-  Widget _buildActionItem(IconData icon, String title, String subtitle, Color iconColor) {
+  Widget _buildActionItem(IconData icon, String title, String subtitle, Color iconColor, bool isTablet) {
     return Material(
       color: Colors.transparent,
       child: InkWell(

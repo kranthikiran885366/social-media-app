@@ -17,18 +17,23 @@ class _LiveStreamPageState extends State<LiveStreamPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.black,
-      body: Stack(
-        children: [
-          _buildVideoStream(),
-          _buildTopBar(),
-          _buildComments(),
-          _buildBottomControls(),
-        ],
+      body: LayoutBuilder(
+        builder: (context, constraints) {
+          final isTablet = constraints.maxWidth > 600;
+          return Stack(
+            children: [
+              _buildVideoStream(isTablet),
+              _buildTopBar(isTablet),
+              _buildComments(isTablet),
+              _buildBottomControls(isTablet),
+            ],
+          );
+        },
       ),
     );
   }
 
-  Widget _buildVideoStream() {
+  Widget _buildVideoStream(bool isTablet) {
     return Container(
       width: double.infinity,
       height: double.infinity,
@@ -37,9 +42,9 @@ class _LiveStreamPageState extends State<LiveStreamPage> {
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
           colors: [
-            Colors.black.withOpacity(0.3),
+            Colors.black.withOpacity(0.2),
             Colors.transparent,
-            Colors.black.withOpacity(0.8),
+            Colors.black.withOpacity(0.9),
           ],
         ),
       ),
@@ -48,25 +53,47 @@ class _LiveStreamPageState extends State<LiveStreamPage> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Container(
-              width: 120,
-              height: 120,
+              width: isTablet ? 160 : 120,
+              height: isTablet ? 160 : 120,
               decoration: BoxDecoration(
-                color: AppColors.primary.withOpacity(0.2),
+                gradient: AppColors.primaryGradient.scale(0.3),
                 shape: BoxShape.circle,
+                boxShadow: [
+                  BoxShadow(
+                    color: AppColors.primary.withOpacity(0.4),
+                    blurRadius: isTablet ? 30 : 20,
+                    offset: const Offset(0, 8),
+                  ),
+                ],
               ),
               child: Icon(
                 _isLive ? Icons.videocam : Icons.videocam_off,
-                size: 60,
+                size: isTablet ? 80 : 60,
                 color: Colors.white,
               ),
             ),
-            const SizedBox(height: 16),
-            Text(
-              _isLive ? 'LIVE' : 'Tap to go live',
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 18,
-                fontWeight: FontWeight.w700,
+            SizedBox(height: isTablet ? 24 : 16),
+            Container(
+              padding: EdgeInsets.symmetric(
+                horizontal: isTablet ? 24 : 16,
+                vertical: isTablet ? 12 : 8,
+              ),
+              decoration: BoxDecoration(
+                color: Colors.black.withOpacity(0.5),
+                borderRadius: BorderRadius.circular(isTablet ? 20 : 16),
+                border: Border.all(
+                  color: Colors.white.withOpacity(0.3),
+                  width: 1,
+                ),
+              ),
+              child: Text(
+                _isLive ? 'LIVE' : 'Tap to go live',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: isTablet ? 22 : 18,
+                  fontWeight: FontWeight.w800,
+                  letterSpacing: 0.5,
+                ),
               ),
             ),
           ],
@@ -75,65 +102,102 @@ class _LiveStreamPageState extends State<LiveStreamPage> {
     );
   }
 
-  Widget _buildTopBar() {
+  Widget _buildTopBar(bool isTablet) {
     return SafeArea(
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: EdgeInsets.all(isTablet ? 24 : 16),
         child: Row(
           children: [
-            IconButton(
-              icon: Icon(Icons.close, color: Colors.white),
-              onPressed: () => Navigator.pop(context),
+            Container(
+              decoration: BoxDecoration(
+                color: Colors.black.withOpacity(0.4),
+                borderRadius: BorderRadius.circular(isTablet ? 16 : 12),
+                border: Border.all(
+                  color: Colors.white.withOpacity(0.3),
+                  width: 1,
+                ),
+              ),
+              child: IconButton(
+                icon: Icon(
+                  Icons.close,
+                  color: Colors.white,
+                  size: isTablet ? 28 : 24,
+                ),
+                onPressed: () => Navigator.pop(context),
+              ),
             ),
             const Spacer(),
             if (_isLive) ...[
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                padding: EdgeInsets.symmetric(
+                  horizontal: isTablet ? 16 : 12,
+                  vertical: isTablet ? 8 : 6,
+                ),
                 decoration: BoxDecoration(
-                  color: AppColors.error,
-                  borderRadius: BorderRadius.circular(20),
+                  gradient: LinearGradient(
+                    colors: [AppColors.error, AppColors.error.withOpacity(0.8)],
+                  ),
+                  borderRadius: BorderRadius.circular(isTablet ? 24 : 20),
+                  boxShadow: [
+                    BoxShadow(
+                      color: AppColors.error.withOpacity(0.4),
+                      blurRadius: isTablet ? 12 : 8,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
                 ),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Container(
-                      width: 8,
-                      height: 8,
-                      decoration: BoxDecoration(
+                      width: isTablet ? 10 : 8,
+                      height: isTablet ? 10 : 8,
+                      decoration: const BoxDecoration(
                         color: Colors.white,
                         shape: BoxShape.circle,
                       ),
                     ),
-                    const SizedBox(width: 6),
+                    SizedBox(width: isTablet ? 8 : 6),
                     Text(
                       'LIVE',
                       style: TextStyle(
                         color: Colors.white,
-                        fontSize: 12,
-                        fontWeight: FontWeight.w700,
+                        fontSize: isTablet ? 14 : 12,
+                        fontWeight: FontWeight.w800,
                       ),
                     ),
                   ],
                 ),
               ),
-              const SizedBox(width: 12),
+              SizedBox(width: isTablet ? 16 : 12),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                padding: EdgeInsets.symmetric(
+                  horizontal: isTablet ? 16 : 12,
+                  vertical: isTablet ? 8 : 6,
+                ),
                 decoration: BoxDecoration(
-                  color: Colors.black.withOpacity(0.5),
-                  borderRadius: BorderRadius.circular(20),
+                  color: Colors.black.withOpacity(0.6),
+                  borderRadius: BorderRadius.circular(isTablet ? 24 : 20),
+                  border: Border.all(
+                    color: Colors.white.withOpacity(0.3),
+                    width: 1,
+                  ),
                 ),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(Icons.visibility, color: Colors.white, size: 16),
-                    const SizedBox(width: 4),
+                    Icon(
+                      Icons.visibility,
+                      color: Colors.white,
+                      size: isTablet ? 18 : 16,
+                    ),
+                    SizedBox(width: isTablet ? 6 : 4),
                     Text(
                       '$_viewerCount',
                       style: TextStyle(
                         color: Colors.white,
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
+                        fontSize: isTablet ? 14 : 12,
+                        fontWeight: FontWeight.w700,
                       ),
                     ),
                   ],
@@ -146,58 +210,81 @@ class _LiveStreamPageState extends State<LiveStreamPage> {
     );
   }
 
-  Widget _buildComments() {
+  Widget _buildComments(bool isTablet) {
     if (!_isLive) return const SizedBox.shrink();
     
     return Positioned(
-      left: 16,
-      right: 16,
-      bottom: 120,
+      left: isTablet ? 24 : 16,
+      right: isTablet ? 24 : 16,
+      bottom: isTablet ? 160 : 120,
       child: Container(
-        height: 200,
+        height: isTablet ? 240 : 200,
         child: ListView.builder(
           itemCount: 10,
-          itemBuilder: (context, index) => _buildCommentItem(index),
+          itemBuilder: (context, index) => _buildCommentItem(index, isTablet),
         ),
       ),
     );
   }
 
-  Widget _buildCommentItem(int index) {
+  Widget _buildCommentItem(int index, bool isTablet) {
     return Container(
-      margin: const EdgeInsets.only(bottom: 8),
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      margin: EdgeInsets.only(bottom: isTablet ? 12 : 8),
+      padding: EdgeInsets.symmetric(
+        horizontal: isTablet ? 16 : 12,
+        vertical: isTablet ? 12 : 8,
+      ),
       decoration: BoxDecoration(
-        color: Colors.black.withOpacity(0.3),
-        borderRadius: BorderRadius.circular(20),
+        color: Colors.black.withOpacity(0.4),
+        borderRadius: BorderRadius.circular(isTablet ? 24 : 20),
+        border: Border.all(
+          color: Colors.white.withOpacity(0.2),
+          width: 1,
+        ),
       ),
       child: RichText(
         text: TextSpan(
-          style: TextStyle(color: Colors.white, fontSize: 14),
+          style: TextStyle(
+            color: Colors.white,
+            fontSize: isTablet ? 16 : 14,
+          ),
           children: [
             TextSpan(
               text: 'user$index ',
-              style: TextStyle(fontWeight: FontWeight.w600),
+              style: TextStyle(
+                fontWeight: FontWeight.w700,
+                color: AppColors.primary.withOpacity(0.8),
+              ),
             ),
-            TextSpan(text: 'Great live stream! 🔥'),
+            const TextSpan(text: 'Great live stream! 🔥'),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildBottomControls() {
+  Widget _buildBottomControls(bool isTablet) {
     return Positioned(
       bottom: 0,
       left: 0,
       right: 0,
       child: Container(
-        padding: const EdgeInsets.all(16),
+        padding: EdgeInsets.all(isTablet ? 24 : 16),
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              Colors.transparent,
+              Colors.black.withOpacity(0.8),
+            ],
+          ),
+        ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            if (_isLive) _buildMessageInput(),
-            const SizedBox(height: 16),
+            if (_isLive) _buildMessageInput(isTablet),
+            SizedBox(height: isTablet ? 24 : 16),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
@@ -205,17 +292,20 @@ class _LiveStreamPageState extends State<LiveStreamPage> {
                   Icons.flip_camera_ios,
                   'Flip',
                   () {},
+                  isTablet,
                 ),
-                _buildLiveButton(),
+                _buildLiveButton(isTablet),
                 _buildControlButton(
                   Icons.mic_off,
                   'Mute',
                   () {},
+                  isTablet,
                 ),
                 _buildControlButton(
                   Icons.more_horiz,
                   'More',
                   () {},
+                  isTablet,
                 ),
               ],
             ),
@@ -225,34 +315,57 @@ class _LiveStreamPageState extends State<LiveStreamPage> {
     );
   }
 
-  Widget _buildMessageInput() {
+  Widget _buildMessageInput(bool isTablet) {
     return Container(
-      height: 44,
+      height: isTablet ? 56 : 44,
       decoration: BoxDecoration(
-        color: Colors.black.withOpacity(0.3),
-        borderRadius: BorderRadius.circular(22),
-        border: Border.all(color: Colors.white.withOpacity(0.3)),
+        color: Colors.black.withOpacity(0.5),
+        borderRadius: BorderRadius.circular(isTablet ? 28 : 22),
+        border: Border.all(
+          color: Colors.white.withOpacity(0.4),
+          width: 1.5,
+        ),
       ),
       child: TextField(
         controller: _messageController,
-        style: TextStyle(color: Colors.white),
+        style: TextStyle(
+          color: Colors.white,
+          fontSize: isTablet ? 16 : 14,
+        ),
         decoration: InputDecoration(
           hintText: 'Say something...',
-          hintStyle: TextStyle(color: Colors.white.withOpacity(0.7)),
+          hintStyle: TextStyle(
+            color: Colors.white.withOpacity(0.7),
+            fontSize: isTablet ? 16 : 14,
+          ),
           border: InputBorder.none,
-          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-          suffixIcon: IconButton(
-            icon: Icon(Icons.send, color: Colors.white),
-            onPressed: () {
-              _messageController.clear();
-            },
+          contentPadding: EdgeInsets.symmetric(
+            horizontal: isTablet ? 20 : 16,
+            vertical: isTablet ? 16 : 12,
+          ),
+          suffixIcon: Container(
+            margin: EdgeInsets.all(isTablet ? 8 : 6),
+            decoration: BoxDecoration(
+              gradient: AppColors.primaryGradient,
+              borderRadius: BorderRadius.circular(isTablet ? 20 : 16),
+            ),
+            child: IconButton(
+              icon: Icon(
+                Icons.send,
+                color: Colors.white,
+                size: isTablet ? 20 : 18,
+              ),
+              onPressed: () {
+                _messageController.clear();
+              },
+            ),
           ),
         ),
       ),
     );
   }
 
-  Widget _buildLiveButton() {
+  Widget _buildLiveButton(bool isTablet) {
     return GestureDetector(
       onTap: () {
         setState(() {
@@ -265,46 +378,69 @@ class _LiveStreamPageState extends State<LiveStreamPage> {
         });
       },
       child: Container(
-        width: 80,
-        height: 80,
+        width: isTablet ? 100 : 80,
+        height: isTablet ? 100 : 80,
         decoration: BoxDecoration(
-          gradient: _isLive ? AppColors.secondaryGradient : null,
-          color: _isLive ? null : Colors.white.withOpacity(0.2),
+          gradient: _isLive ? AppColors.secondaryGradient : AppColors.primaryGradient,
           shape: BoxShape.circle,
-          border: Border.all(color: Colors.white, width: 3),
+          border: Border.all(
+            color: Colors.white,
+            width: isTablet ? 4 : 3,
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: (_isLive ? AppColors.secondary : AppColors.primary).withOpacity(0.4),
+              blurRadius: isTablet ? 20 : 15,
+              offset: const Offset(0, 8),
+            ),
+          ],
         ),
         child: Icon(
           _isLive ? Icons.stop : Icons.play_arrow,
           color: Colors.white,
-          size: 32,
+          size: isTablet ? 40 : 32,
         ),
       ),
     );
   }
 
-  Widget _buildControlButton(IconData icon, String label, VoidCallback onTap) {
+  Widget _buildControlButton(IconData icon, String label, VoidCallback onTap, bool isTablet) {
     return GestureDetector(
       onTap: onTap,
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
           Container(
-            width: 50,
-            height: 50,
+            width: isTablet ? 64 : 50,
+            height: isTablet ? 64 : 50,
             decoration: BoxDecoration(
-              color: Colors.black.withOpacity(0.3),
+              color: Colors.black.withOpacity(0.4),
               shape: BoxShape.circle,
-              border: Border.all(color: Colors.white.withOpacity(0.3)),
+              border: Border.all(
+                color: Colors.white.withOpacity(0.4),
+                width: 1.5,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.3),
+                  blurRadius: isTablet ? 12 : 8,
+                  offset: const Offset(0, 4),
+                ),
+              ],
             ),
-            child: Icon(icon, color: Colors.white, size: 24),
+            child: Icon(
+              icon,
+              color: Colors.white,
+              size: isTablet ? 28 : 24,
+            ),
           ),
-          const SizedBox(height: 4),
+          SizedBox(height: isTablet ? 8 : 4),
           Text(
             label,
             style: TextStyle(
               color: Colors.white,
-              fontSize: 12,
-              fontWeight: FontWeight.w500,
+              fontSize: isTablet ? 14 : 12,
+              fontWeight: FontWeight.w600,
             ),
           ),
         ],

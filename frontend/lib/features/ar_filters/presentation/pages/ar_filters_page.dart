@@ -538,7 +538,7 @@ class _ARFiltersPageState extends State<ARFiltersPage>
         );
       case 'Fun':
         return LinearGradient(
-          colors: [AppColors.accent, AppColors.accent.withOpacity(0.7)],
+          colors: [AppColors.secondary, AppColors.secondary.withOpacity(0.7)],
         );
       case 'Effects':
         return LinearGradient(
@@ -574,7 +574,7 @@ class _ARFiltersPageState extends State<ARFiltersPage>
       case 'Beauty':
         return AppColors.secondary;
       case 'Fun':
-        return AppColors.accent;
+        return AppColors.secondary;
       case 'Effects':
         return AppColors.primary;
       default:

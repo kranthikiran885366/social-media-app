@@ -17,23 +17,28 @@ class _ReelsPageState extends State<ReelsPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.black,
-      body: Stack(
-        children: [
-          PageView.builder(
-            controller: _pageController,
-            scrollDirection: Axis.vertical,
-            onPageChanged: (index) => setState(() => _currentIndex = index),
-            itemCount: 10,
-            itemBuilder: (context, index) => _buildReelItem(index),
-          ),
-          _buildTopBar(),
-          _buildSideActions(),
-        ],
+      body: LayoutBuilder(
+        builder: (context, constraints) {
+          final isTablet = constraints.maxWidth > 600;
+          return Stack(
+            children: [
+              PageView.builder(
+                controller: _pageController,
+                scrollDirection: Axis.vertical,
+                onPageChanged: (index) => setState(() => _currentIndex = index),
+                itemCount: 10,
+                itemBuilder: (context, index) => _buildReelItem(index, isTablet),
+              ),
+              _buildTopBar(isTablet),
+              _buildSideActions(isTablet),
+            ],
+          );
+        },
       ),
     );
   }
 
-  Widget _buildReelItem(int index) {
+  Widget _buildReelItem(int index, bool isTablet) {
     return Container(
       width: double.infinity,
       height: double.infinity,
@@ -42,9 +47,9 @@ class _ReelsPageState extends State<ReelsPage> {
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
           colors: [
-            Colors.black.withOpacity(0.3),
+            Colors.black.withOpacity(0.2),
             Colors.transparent,
-            Colors.black.withOpacity(0.7),
+            Colors.black.withOpacity(0.8),
           ],
         ),
       ),
@@ -52,43 +57,79 @@ class _ReelsPageState extends State<ReelsPage> {
         children: [
           Center(
             child: Container(
-              width: 200,
-              height: 200,
+              width: isTablet ? 280 : 220,
+              height: isTablet ? 280 : 220,
               decoration: BoxDecoration(
-                color: AppColors.primary.withOpacity(0.2),
-                borderRadius: BorderRadius.circular(20),
+                gradient: AppColors.primaryGradient.scale(0.3),
+                borderRadius: BorderRadius.circular(isTablet ? 32 : 24),
+                boxShadow: [
+                  BoxShadow(
+                    color: AppColors.primary.withOpacity(0.3),
+                    blurRadius: isTablet ? 30 : 20,
+                    offset: const Offset(0, 8),
+                  ),
+                ],
               ),
               child: Icon(
-                Icons.play_arrow,
-                size: 80,
+                Icons.play_arrow_rounded,
+                size: isTablet ? 100 : 80,
                 color: Colors.white,
               ),
             ),
           ),
-          _buildBottomInfo(index),
+          _buildBottomInfo(index, isTablet),
         ],
       ),
     );
   }
 
-  Widget _buildTopBar() {
+  Widget _buildTopBar(bool isTablet) {
     return SafeArea(
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: EdgeInsets.all(isTablet ? 24 : 16),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text(
-              'Reels',
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 24,
-                fontWeight: FontWeight.w700,
+            Container(
+              padding: EdgeInsets.symmetric(
+                horizontal: isTablet ? 20 : 16,
+                vertical: isTablet ? 12 : 8,
+              ),
+              decoration: BoxDecoration(
+                color: Colors.black.withOpacity(0.3),
+                borderRadius: BorderRadius.circular(isTablet ? 20 : 16),
+                border: Border.all(
+                  color: Colors.white.withOpacity(0.2),
+                  width: 1,
+                ),
+              ),
+              child: Text(
+                'Reels',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: isTablet ? 28 : 24,
+                  fontWeight: FontWeight.w800,
+                  letterSpacing: -0.5,
+                ),
               ),
             ),
-            IconButton(
-              icon: Icon(Icons.camera_alt_outlined, color: Colors.white),
-              onPressed: () {},
+            Container(
+              decoration: BoxDecoration(
+                color: Colors.black.withOpacity(0.3),
+                borderRadius: BorderRadius.circular(isTablet ? 20 : 16),
+                border: Border.all(
+                  color: Colors.white.withOpacity(0.2),
+                  width: 1,
+                ),
+              ),
+              child: IconButton(
+                icon: Icon(
+                  Icons.camera_alt_outlined,
+                  color: Colors.white,
+                  size: isTablet ? 28 : 24,
+                ),
+                onPressed: () {},
+              ),
             ),
           ],
         ),
@@ -96,44 +137,69 @@ class _ReelsPageState extends State<ReelsPage> {
     );
   }
 
-  Widget _buildSideActions() {
+  Widget _buildSideActions(bool isTablet) {
     return Positioned(
-      right: 16,
-      bottom: 100,
+      right: isTablet ? 32 : 16,
+      bottom: isTablet ? 140 : 100,
       child: Column(
         children: [
-          _buildActionButton(Icons.favorite_outline, '125K'),
-          _buildActionButton(Icons.comment_outlined, '1.2K'),
-          _buildActionButton(Icons.send_outlined, ''),
-          _buildActionButton(Icons.more_vert, ''),
+          _buildActionButton(Icons.favorite_outline, '125K', isTablet),
+          _buildActionButton(Icons.comment_outlined, '1.2K', isTablet),
+          _buildActionButton(Icons.send_outlined, '', isTablet),
+          _buildActionButton(Icons.more_vert, '', isTablet),
         ],
       ),
     );
   }
 
-  Widget _buildActionButton(IconData icon, String count) {
+  Widget _buildActionButton(IconData icon, String count, bool isTablet) {
     return Container(
-      margin: const EdgeInsets.only(bottom: 20),
+      margin: EdgeInsets.only(bottom: isTablet ? 28 : 20),
       child: Column(
         children: [
           Container(
-            width: 48,
-            height: 48,
+            width: isTablet ? 64 : 48,
+            height: isTablet ? 64 : 48,
             decoration: BoxDecoration(
-              color: Colors.black.withOpacity(0.3),
+              color: Colors.black.withOpacity(0.4),
               shape: BoxShape.circle,
+              border: Border.all(
+                color: Colors.white.withOpacity(0.2),
+                width: 1,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.3),
+                  blurRadius: isTablet ? 12 : 8,
+                  offset: const Offset(0, 4),
+                ),
+              ],
             ),
-            child: Icon(icon, color: Colors.white, size: 24),
+            child: Icon(
+              icon,
+              color: Colors.white,
+              size: isTablet ? 28 : 24,
+            ),
           ),
           if (count.isNotEmpty)
             Padding(
-              padding: const EdgeInsets.only(top: 4),
-              child: Text(
-                count,
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 12,
-                  fontWeight: FontWeight.w600,
+              padding: EdgeInsets.only(top: isTablet ? 8 : 4),
+              child: Container(
+                padding: EdgeInsets.symmetric(
+                  horizontal: isTablet ? 8 : 6,
+                  vertical: isTablet ? 4 : 2,
+                ),
+                decoration: BoxDecoration(
+                  color: Colors.black.withOpacity(0.5),
+                  borderRadius: BorderRadius.circular(isTablet ? 12 : 8),
+                ),
+                child: Text(
+                  count,
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: isTablet ? 14 : 12,
+                    fontWeight: FontWeight.w700,
+                  ),
                 ),
               ),
             ),
@@ -142,55 +208,96 @@ class _ReelsPageState extends State<ReelsPage> {
     );
   }
 
-  Widget _buildBottomInfo(int index) {
+  Widget _buildBottomInfo(int index, bool isTablet) {
     return Positioned(
       bottom: 0,
       left: 0,
-      right: 80,
+      right: isTablet ? 120 : 80,
       child: Container(
-        padding: const EdgeInsets.all(16),
+        padding: EdgeInsets.all(isTablet ? 24 : 16),
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              Colors.transparent,
+              Colors.black.withOpacity(0.8),
+            ],
+          ),
+        ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisSize: MainAxisSize.min,
           children: [
             Row(
               children: [
-                CircleAvatar(
-                  radius: 16,
-                  backgroundImage: NetworkImage('https://picsum.photos/100/100?random=$index'),
+                Container(
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: Colors.white.withOpacity(0.3),
+                      width: 2,
+                    ),
+                  ),
+                  child: CircleAvatar(
+                    radius: isTablet ? 20 : 16,
+                    backgroundImage: NetworkImage('https://picsum.photos/100/100?random=$index'),
+                  ),
                 ),
-                const SizedBox(width: 8),
+                SizedBox(width: isTablet ? 12 : 8),
                 Text(
                   'user$index',
                   style: TextStyle(
                     color: Colors.white,
-                    fontWeight: FontWeight.w600,
+                    fontWeight: FontWeight.w700,
+                    fontSize: isTablet ? 16 : 14,
                   ),
                 ),
-                const SizedBox(width: 8),
+                SizedBox(width: isTablet ? 12 : 8),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                  padding: EdgeInsets.symmetric(
+                    horizontal: isTablet ? 16 : 12,
+                    vertical: isTablet ? 8 : 6,
+                  ),
                   decoration: BoxDecoration(
-                    border: Border.all(color: Colors.white),
-                    borderRadius: BorderRadius.circular(4),
+                    gradient: AppColors.primaryGradient,
+                    borderRadius: BorderRadius.circular(isTablet ? 12 : 8),
+                    boxShadow: [
+                      BoxShadow(
+                        color: AppColors.primary.withOpacity(0.3),
+                        blurRadius: isTablet ? 8 : 6,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
                   ),
                   child: Text(
                     'Follow',
                     style: TextStyle(
                       color: Colors.white,
-                      fontSize: 12,
-                      fontWeight: FontWeight.w600,
+                      fontSize: isTablet ? 14 : 12,
+                      fontWeight: FontWeight.w700,
                     ),
                   ),
                 ),
               ],
             ),
-            const SizedBox(height: 8),
-            Text(
-              'Amazing reel content here! #reels #viral #trending',
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 14,
+            SizedBox(height: isTablet ? 12 : 8),
+            Container(
+              padding: EdgeInsets.symmetric(
+                horizontal: isTablet ? 16 : 12,
+                vertical: isTablet ? 8 : 6,
+              ),
+              decoration: BoxDecoration(
+                color: Colors.black.withOpacity(0.3),
+                borderRadius: BorderRadius.circular(isTablet ? 12 : 8),
+              ),
+              child: Text(
+                'Amazing reel content here! #reels #viral #trending',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: isTablet ? 16 : 14,
+                  height: 1.4,
+                ),
               ),
             ),
           ],

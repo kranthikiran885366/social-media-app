@@ -295,7 +295,7 @@ class _ActivityPageState extends State<ActivityPage> with SingleTickerProviderSt
             border: Border.all(color: AppColors.border),
             boxShadow: [
               BoxShadow(
-                color: AppColors.accent.withOpacity(0.05),
+                color: AppColors.primary.withOpacity(0.05),
                 blurRadius: 10,
                 offset: const Offset(0, 4),
               ),
@@ -306,10 +306,10 @@ class _ActivityPageState extends State<ActivityPage> with SingleTickerProviderSt
             leading: Container(
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                gradient: AppColors.accentGradient,
+                gradient: AppColors.primaryGradient,
                 boxShadow: [
                   BoxShadow(
-                    color: AppColors.accent.withOpacity(0.3),
+                    color: AppColors.primary.withOpacity(0.3),
                     blurRadius: 8,
                     offset: const Offset(0, 4),
                   ),

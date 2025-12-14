@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
+import '../../../core/theme/app_colors.dart';
 import '../models/story_models.dart';
 import '../widgets/highlight_cover_selector.dart';
 
 class StoryHighlightsPage extends StatefulWidget {
   final String userId;
 
-  const StoryHighlightsPage({Key? key, required this.userId}) : super(key: key);
+  const StoryHighlightsPage({super.key, required this.userId});
 
   @override
   State<StoryHighlightsPage> createState() => _StoryHighlightsPageState();
@@ -72,122 +73,273 @@ class _StoryHighlightsPageState extends State<StoryHighlightsPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Story Highlights'),
-        actions: [
-          IconButton(
-            onPressed: _createNewHighlight,
-            icon: const Icon(Icons.add),
-          ),
-        ],
-      ),
-      body: Column(
-        children: [
-          // Highlights Section
-          if (_highlights.isNotEmpty) ...[
-            Padding(
-              padding: const EdgeInsets.all(16),
-              child: Row(
-                children: [
-                  const Text(
-                    'Highlights',
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+      backgroundColor: AppColors.background,
+      body: LayoutBuilder(
+        builder: (context, constraints) {
+          final isTablet = constraints.maxWidth > 600;
+          return CustomScrollView(
+            slivers: [
+              SliverAppBar(
+                backgroundColor: AppColors.background,
+                elevation: 0,
+                floating: true,
+                snap: true,
+                expandedHeight: isTablet ? 120 : 100,
+                flexibleSpace: FlexibleSpaceBar(
+                  background: Container(
+                    decoration: BoxDecoration(
+                      gradient: AppColors.primaryGradient.scale(0.1),
+                    ),
                   ),
-                  const Spacer(),
-                  TextButton(
-                    onPressed: _manageHighlights,
-                    child: const Text('Manage'),
+                  title: Text(
+                    'Story Highlights',
+                    style: TextStyle(
+                      color: AppColors.textPrimary,
+                      fontSize: isTablet ? 28 : 20,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  centerTitle: false,
+                ),
+                leading: Container(
+                  margin: EdgeInsets.only(
+                    left: isTablet ? 24 : 16,
+                    top: isTablet ? 12 : 8,
+                  ),
+                  decoration: BoxDecoration(
+                    color: AppColors.surface,
+                    borderRadius: BorderRadius.circular(isTablet ? 16 : 12),
+                    border: Border.all(color: AppColors.border),
+                  ),
+                  child: IconButton(
+                    icon: Icon(
+                      Icons.arrow_back,
+                      color: AppColors.textPrimary,
+                      size: isTablet ? 28 : 24,
+                    ),
+                    onPressed: () => Navigator.pop(context),
+                  ),
+                ),
+                actions: [
+                  Container(
+                    margin: EdgeInsets.only(
+                      right: isTablet ? 24 : 16,
+                      top: isTablet ? 12 : 8,
+                    ),
+                    decoration: BoxDecoration(
+                      gradient: AppColors.primaryGradient,
+                      borderRadius: BorderRadius.circular(isTablet ? 16 : 12),
+                    ),
+                    child: IconButton(
+                      onPressed: _createNewHighlight,
+                      icon: Icon(
+                        Icons.add,
+                        color: Colors.white,
+                        size: isTablet ? 28 : 24,
+                      ),
+                    ),
                   ),
                 ],
               ),
-            ),
-            SizedBox(
-              height: 120,
-              child: ListView.builder(
-                scrollDirection: Axis.horizontal,
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                itemCount: _highlights.length + 1,
-                itemBuilder: (context, index) {
-                  if (index == _highlights.length) {
-                    return _buildCreateHighlightButton();
-                  }
-                  return _buildHighlightItem(_highlights[index]);
-                },
-              ),
-            ),
-            const Divider(),
-          ],
+              SliverToBoxAdapter(
+                child: Column(
+                  children: [
+                    // Highlights Section
+                    if (_highlights.isNotEmpty) ...[
+                      Container(
+                        margin: EdgeInsets.all(isTablet ? 24 : 16),
+                        padding: EdgeInsets.all(isTablet ? 24 : 20),
+                        decoration: BoxDecoration(
+                          color: AppColors.surface,
+                          borderRadius: BorderRadius.circular(isTablet ? 20 : 16),
+                          border: Border.all(color: AppColors.border),
+                          boxShadow: [
+                            BoxShadow(
+                              color: AppColors.primary.withOpacity(0.05),
+                              blurRadius: isTablet ? 15 : 10,
+                              offset: const Offset(0, 4),
+                            ),
+                          ],
+                        ),
+                        child: Column(
+                          children: [
+                            Row(
+                              children: [
+                                Text(
+                                  'Highlights',
+                                  style: TextStyle(
+                                    fontSize: isTablet ? 22 : 18,
+                                    fontWeight: FontWeight.w800,
+                                    color: AppColors.textPrimary,
+                                  ),
+                                ),
+                                const Spacer(),
+                                Container(
+                                  padding: EdgeInsets.symmetric(
+                                    horizontal: isTablet ? 16 : 12,
+                                    vertical: isTablet ? 8 : 6,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    gradient: AppColors.primaryGradient,
+                                    borderRadius: BorderRadius.circular(isTablet ? 12 : 8),
+                                  ),
+                                  child: InkWell(
+                                    onTap: _manageHighlights,
+                                    child: Text(
+                                      'Manage',
+                                      style: TextStyle(
+                                        color: Colors.white,
+                                        fontSize: isTablet ? 14 : 12,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            SizedBox(height: isTablet ? 20 : 16),
+                            SizedBox(
+                              height: isTablet ? 140 : 120,
+                              child: ListView.builder(
+                                scrollDirection: Axis.horizontal,
+                                itemCount: _highlights.length + 1,
+                                itemBuilder: (context, index) {
+                                  if (index == _highlights.length) {
+                                    return _buildCreateHighlightButton(isTablet);
+                                  }
+                                  return _buildHighlightItem(_highlights[index], isTablet);
+                                },
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
 
-          // Archived Stories Section
-          Padding(
-            padding: const EdgeInsets.all(16),
-            child: Row(
-              children: [
-                const Text(
-                  'Archive',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                ),
-                const Spacer(),
-                IconButton(
-                  onPressed: () => _showArchiveOptions(),
-                  icon: const Icon(Icons.more_vert),
-                ),
-              ],
-            ),
-          ),
+                    // Archived Stories Section
+                    Container(
+                      margin: EdgeInsets.symmetric(
+                        horizontal: isTablet ? 24 : 16,
+                        vertical: isTablet ? 16 : 12,
+                      ),
+                      padding: EdgeInsets.all(isTablet ? 20 : 16),
+                      decoration: BoxDecoration(
+                        color: AppColors.surface,
+                        borderRadius: BorderRadius.circular(isTablet ? 20 : 16),
+                        border: Border.all(color: AppColors.border),
+                      ),
+                      child: Row(
+                        children: [
+                          Text(
+                            'Archive',
+                            style: TextStyle(
+                              fontSize: isTablet ? 22 : 18,
+                              fontWeight: FontWeight.w800,
+                              color: AppColors.textPrimary,
+                            ),
+                          ),
+                          const Spacer(),
+                          Container(
+                            decoration: BoxDecoration(
+                              color: AppColors.backgroundSecondary,
+                              borderRadius: BorderRadius.circular(isTablet ? 12 : 8),
+                            ),
+                            child: IconButton(
+                              onPressed: () => _showArchiveOptions(),
+                              icon: Icon(
+                                Icons.more_vert,
+                                color: AppColors.textSecondary,
+                                size: isTablet ? 28 : 24,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
 
-          // Archive Grid
-          Expanded(
-            child: GridView.builder(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 3,
-                crossAxisSpacing: 2,
-                mainAxisSpacing: 2,
-                childAspectRatio: 9 / 16,
+                  ],
+                ),
               ),
-              itemCount: _archivedStories.length,
-              itemBuilder: (context, index) {
-                return _buildArchivedStoryItem(_archivedStories[index]);
-              },
-            ),
-          ),
-        ],
+              // Archive Grid
+              SliverPadding(
+                padding: EdgeInsets.symmetric(
+                  horizontal: isTablet ? 24 : 16,
+                ),
+                sliver: SliverGrid(
+                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: isTablet ? 4 : 3,
+                    crossAxisSpacing: isTablet ? 8 : 4,
+                    mainAxisSpacing: isTablet ? 8 : 4,
+                    childAspectRatio: 9 / 16,
+                  ),
+                  delegate: SliverChildBuilderDelegate(
+                    (context, index) {
+                      return _buildArchivedStoryItem(_archivedStories[index], isTablet);
+                    },
+                    childCount: _archivedStories.length,
+                  ),
+                ),
+              ),
+            ],
+          );
+        },
       ),
     );
   }
 
-  Widget _buildHighlightItem(StoryHighlight highlight) {
+  Widget _buildHighlightItem(StoryHighlight highlight, bool isTablet) {
     return GestureDetector(
       onTap: () => _viewHighlight(highlight),
       onLongPress: () => _editHighlight(highlight),
       child: Container(
-        width: 80,
-        margin: const EdgeInsets.only(right: 12),
+        width: isTablet ? 100 : 80,
+        margin: EdgeInsets.only(right: isTablet ? 16 : 12),
         child: Column(
           children: [
             Container(
-              width: 70,
-              height: 70,
+              width: isTablet ? 80 : 70,
+              height: isTablet ? 80 : 70,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                border: Border.all(color: Colors.grey, width: 2),
+                gradient: AppColors.primaryGradient,
+                boxShadow: [
+                  BoxShadow(
+                    color: AppColors.primary.withOpacity(0.3),
+                    blurRadius: isTablet ? 12 : 8,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
               ),
-              child: ClipOval(
-                child: Image.network(
-                  highlight.coverUrl,
-                  fit: BoxFit.cover,
-                  errorBuilder: (context, error, stackTrace) => Container(
-                    color: Colors.grey[300],
-                    child: const Icon(Icons.photo, color: Colors.grey),
+              padding: const EdgeInsets.all(3),
+              child: Container(
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  border: Border.all(color: Colors.white, width: 2),
+                ),
+                child: ClipOval(
+                  child: Image.network(
+                    highlight.coverUrl,
+                    fit: BoxFit.cover,
+                    errorBuilder: (context, error, stackTrace) => Container(
+                      color: AppColors.backgroundSecondary,
+                      child: Icon(
+                        Icons.photo,
+                        color: AppColors.textTertiary,
+                        size: isTablet ? 32 : 24,
+                      ),
+                    ),
                   ),
                 ),
               ),
             ),
-            const SizedBox(height: 8),
+            SizedBox(height: isTablet ? 12 : 8),
             Text(
               highlight.title,
-              style: const TextStyle(fontSize: 12),
+              style: TextStyle(
+                fontSize: isTablet ? 14 : 12,
+                fontWeight: FontWeight.w600,
+                color: AppColors.textPrimary,
+              ),
               textAlign: TextAlign.center,
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
@@ -198,28 +350,40 @@ class _StoryHighlightsPageState extends State<StoryHighlightsPage> {
     );
   }
 
-  Widget _buildCreateHighlightButton() {
+  Widget _buildCreateHighlightButton(bool isTablet) {
     return GestureDetector(
       onTap: _createNewHighlight,
       child: Container(
-        width: 80,
-        margin: const EdgeInsets.only(right: 12),
+        width: isTablet ? 100 : 80,
+        margin: EdgeInsets.only(right: isTablet ? 16 : 12),
         child: Column(
           children: [
             Container(
-              width: 70,
-              height: 70,
+              width: isTablet ? 80 : 70,
+              height: isTablet ? 80 : 70,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                border: Border.all(color: Colors.grey, width: 2, style: BorderStyle.solid),
-                color: Colors.grey[100],
+                border: Border.all(
+                  color: AppColors.border,
+                  width: 2,
+                  style: BorderStyle.solid,
+                ),
+                color: AppColors.backgroundSecondary,
               ),
-              child: const Icon(Icons.add, color: Colors.grey, size: 30),
+              child: Icon(
+                Icons.add,
+                color: AppColors.textSecondary,
+                size: isTablet ? 36 : 30,
+              ),
             ),
-            const SizedBox(height: 8),
-            const Text(
+            SizedBox(height: isTablet ? 12 : 8),
+            Text(
               'New',
-              style: TextStyle(fontSize: 12, color: Colors.grey),
+              style: TextStyle(
+                fontSize: isTablet ? 14 : 12,
+                color: AppColors.textSecondary,
+                fontWeight: FontWeight.w600,
+              ),
               textAlign: TextAlign.center,
             ),
           ],
@@ -228,17 +392,24 @@ class _StoryHighlightsPageState extends State<StoryHighlightsPage> {
     );
   }
 
-  Widget _buildArchivedStoryItem(Story story) {
+  Widget _buildArchivedStoryItem(Story story, bool isTablet) {
     return GestureDetector(
       onTap: () => _viewArchivedStory(story),
       onLongPress: () => _showStoryOptions(story),
       child: Container(
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: Colors.grey[300]!),
+          borderRadius: BorderRadius.circular(isTablet ? 12 : 8),
+          border: Border.all(color: AppColors.border),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.08),
+              blurRadius: isTablet ? 8 : 4,
+              offset: const Offset(0, 2),
+            ),
+          ],
         ),
         child: ClipRRect(
-          borderRadius: BorderRadius.circular(8),
+          borderRadius: BorderRadius.circular(isTablet ? 12 : 8),
           child: Stack(
             fit: StackFit.expand,
             children: [
@@ -246,29 +417,53 @@ class _StoryHighlightsPageState extends State<StoryHighlightsPage> {
                 story.media.url,
                 fit: BoxFit.cover,
                 errorBuilder: (context, error, stackTrace) => Container(
-                  color: Colors.grey[300],
-                  child: const Icon(Icons.photo, color: Colors.grey),
+                  color: AppColors.backgroundSecondary,
+                  child: Icon(
+                    Icons.photo,
+                    color: AppColors.textTertiary,
+                    size: isTablet ? 32 : 24,
+                  ),
                 ),
               ),
               if (story.media.type == MediaType.video)
-                const Positioned(
-                  top: 8,
-                  right: 8,
-                  child: Icon(Icons.play_circle_filled, color: Colors.white, size: 20),
+                Positioned(
+                  top: isTablet ? 12 : 8,
+                  right: isTablet ? 12 : 8,
+                  child: Container(
+                    padding: EdgeInsets.all(isTablet ? 6 : 4),
+                    decoration: BoxDecoration(
+                      color: Colors.black.withOpacity(0.6),
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(
+                      Icons.play_arrow,
+                      color: Colors.white,
+                      size: isTablet ? 20 : 16,
+                    ),
+                  ),
                 ),
               Positioned(
-                bottom: 4,
-                left: 4,
-                right: 4,
-                child: Text(
-                  _formatDate(story.createdAt),
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 10,
-                    fontWeight: FontWeight.bold,
-                    shadows: [Shadow(color: Colors.black, blurRadius: 2)],
+                bottom: isTablet ? 8 : 4,
+                left: isTablet ? 8 : 4,
+                right: isTablet ? 8 : 4,
+                child: Container(
+                  padding: EdgeInsets.symmetric(
+                    horizontal: isTablet ? 8 : 4,
+                    vertical: isTablet ? 4 : 2,
                   ),
-                  textAlign: TextAlign.center,
+                  decoration: BoxDecoration(
+                    color: Colors.black.withOpacity(0.7),
+                    borderRadius: BorderRadius.circular(isTablet ? 8 : 4),
+                  ),
+                  child: Text(
+                    _formatDate(story.createdAt),
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: isTablet ? 12 : 10,
+                      fontWeight: FontWeight.w600,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
                 ),
               ),
             ],

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:camera/camera.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:permission_handler/permission_handler.dart';
+import '../../../core/theme/app_colors.dart';
 import '../models/story_models.dart';
 import '../widgets/camera_controls.dart';
 import '../widgets/filter_selector.dart';
@@ -9,7 +10,7 @@ import '../widgets/ar_filter_overlay.dart';
 import '../editor/story_editor_page.dart';
 
 class StoryCameraPage extends StatefulWidget {
-  const StoryCameraPage({Key? key}) : super(key: key);
+  const StoryCameraPage({super.key});
 
   @override
   State<StoryCameraPage> createState() => _StoryCameraPageState();
@@ -184,23 +185,52 @@ class _StoryCameraPageState extends State<StoryCameraPage>
 
   void _showError(String message) {
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(message)),
+      SnackBar(
+        content: Text(message),
+        backgroundColor: AppColors.error,
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+        ),
+      ),
     );
   }
 
   @override
   Widget build(BuildContext context) {
     if (_cameraController == null || !_cameraController!.value.isInitialized) {
-      return const Scaffold(
+      return Scaffold(
         backgroundColor: Colors.black,
-        body: Center(child: CircularProgressIndicator()),
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              CircularProgressIndicator(
+                color: AppColors.primary,
+                strokeWidth: 3,
+              ),
+              const SizedBox(height: 16),
+              Text(
+                'Initializing Camera...',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ],
+          ),
+        ),
       );
     }
 
     return Scaffold(
       backgroundColor: Colors.black,
-      body: Stack(
-        children: [
+      body: LayoutBuilder(
+        builder: (context, constraints) {
+          final isTablet = constraints.maxWidth > 600;
+          return Stack(
+            children: [
           // Camera Preview
           Positioned.fill(
             child: GestureDetector(
@@ -221,95 +251,135 @@ class _StoryCameraPageState extends State<StoryCameraPage>
               child: ARFilterOverlay(filter: _selectedARFilter!),
             ),
 
-          // Top Controls
-          Positioned(
-            top: MediaQuery.of(context).padding.top + 16,
-            left: 16,
-            right: 16,
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                IconButton(
-                  onPressed: () => Navigator.pop(context),
-                  icon: const Icon(Icons.close, color: Colors.white, size: 28),
-                ),
-                Row(
+              // Top Controls
+              Positioned(
+                top: MediaQuery.of(context).padding.top + (isTablet ? 24 : 16),
+                left: isTablet ? 24 : 16,
+                right: isTablet ? 24 : 16,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    IconButton(
-                      onPressed: () => setState(() => _isHandsFree = !_isHandsFree),
-                      icon: Icon(
-                        Icons.timer,
-                        color: _isHandsFree ? Colors.yellow : Colors.white,
-                        size: 24,
+                    Container(
+                      decoration: BoxDecoration(
+                        color: Colors.black.withOpacity(0.5),
+                        borderRadius: BorderRadius.circular(isTablet ? 16 : 12),
+                      ),
+                      child: IconButton(
+                        onPressed: () => Navigator.pop(context),
+                        icon: Icon(
+                          Icons.close,
+                          color: Colors.white,
+                          size: isTablet ? 32 : 28,
+                        ),
                       ),
                     ),
-                    IconButton(
-                      onPressed: () {},
-                      icon: const Icon(Icons.flash_off, color: Colors.white, size: 24),
-                    ),
-                    IconButton(
-                      onPressed: _switchCamera,
-                      icon: const Icon(Icons.flip_camera_ios, color: Colors.white, size: 24),
+                    Row(
+                      children: [
+                        Container(
+                          margin: EdgeInsets.only(right: isTablet ? 12 : 8),
+                          decoration: BoxDecoration(
+                            color: Colors.black.withOpacity(0.5),
+                            borderRadius: BorderRadius.circular(isTablet ? 16 : 12),
+                          ),
+                          child: IconButton(
+                            onPressed: () => setState(() => _isHandsFree = !_isHandsFree),
+                            icon: Icon(
+                              Icons.timer,
+                              color: _isHandsFree ? AppColors.warning : Colors.white,
+                              size: isTablet ? 28 : 24,
+                            ),
+                          ),
+                        ),
+                        Container(
+                          margin: EdgeInsets.only(right: isTablet ? 12 : 8),
+                          decoration: BoxDecoration(
+                            color: Colors.black.withOpacity(0.5),
+                            borderRadius: BorderRadius.circular(isTablet ? 16 : 12),
+                          ),
+                          child: IconButton(
+                            onPressed: () {},
+                            icon: Icon(
+                              Icons.flash_off,
+                              color: Colors.white,
+                              size: isTablet ? 28 : 24,
+                            ),
+                          ),
+                        ),
+                        Container(
+                          decoration: BoxDecoration(
+                            color: Colors.black.withOpacity(0.5),
+                            borderRadius: BorderRadius.circular(isTablet ? 16 : 12),
+                          ),
+                          child: IconButton(
+                            onPressed: _switchCamera,
+                            icon: Icon(
+                              Icons.flip_camera_ios,
+                              color: Colors.white,
+                              size: isTablet ? 28 : 24,
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   ],
                 ),
-              ],
-            ),
-          ),
+              ),
 
-          // Camera Mode Selector
-          Positioned(
-            left: 16,
-            top: MediaQuery.of(context).size.height * 0.3,
-            child: Column(
-              children: [
-                _buildModeButton('NORMAL', !_isBoomerang && !_isSuperzoom && !_isLayoutMode),
-                const SizedBox(height: 16),
-                _buildModeButton('BOOMERANG', _isBoomerang),
-                const SizedBox(height: 16),
-                _buildModeButton('SUPERZOOM', _isSuperzoom),
-                const SizedBox(height: 16),
-                _buildModeButton('LAYOUT', _isLayoutMode),
-                const SizedBox(height: 16),
-                _buildModeButton('MULTI', _isMultiCapture),
-              ],
-            ),
-          ),
+              // Camera Mode Selector
+              Positioned(
+                left: isTablet ? 24 : 16,
+                top: MediaQuery.of(context).size.height * 0.3,
+                child: Column(
+                  children: [
+                    _buildModeButton('NORMAL', !_isBoomerang && !_isSuperzoom && !_isLayoutMode, isTablet),
+                    SizedBox(height: isTablet ? 20 : 16),
+                    _buildModeButton('BOOMERANG', _isBoomerang, isTablet),
+                    SizedBox(height: isTablet ? 20 : 16),
+                    _buildModeButton('SUPERZOOM', _isSuperzoom, isTablet),
+                    SizedBox(height: isTablet ? 20 : 16),
+                    _buildModeButton('LAYOUT', _isLayoutMode, isTablet),
+                    SizedBox(height: isTablet ? 20 : 16),
+                    _buildModeButton('MULTI', _isMultiCapture, isTablet),
+                  ],
+                ),
+              ),
 
-          // Filter Selector
-          Positioned(
-            bottom: 200,
-            left: 0,
-            right: 0,
-            child: FilterSelector(
-              onFilterSelected: (filter) {
-                setState(() => _selectedFilter = filter);
-              },
-              onARFilterSelected: (arFilter) {
-                setState(() => _selectedARFilter = arFilter);
-              },
-            ),
-          ),
+              // Filter Selector
+              Positioned(
+                bottom: isTablet ? 240 : 200,
+                left: 0,
+                right: 0,
+                child: FilterSelector(
+                  onFilterSelected: (filter) {
+                    setState(() => _selectedFilter = filter);
+                  },
+                  onARFilterSelected: (arFilter) {
+                    setState(() => _selectedARFilter = arFilter);
+                  },
+                ),
+              ),
 
-          // Camera Controls
-          Positioned(
-            bottom: 0,
-            left: 0,
-            right: 0,
-            child: CameraControls(
-              isRecording: _isRecording,
-              onCapturePhoto: _capturePhoto,
-              onStartRecording: _startVideoRecording,
-              onStopRecording: _stopVideoRecording,
-              recordingAnimation: _recordingAnimationController,
-            ),
-          ),
-        ],
+              // Camera Controls
+              Positioned(
+                bottom: 0,
+                left: 0,
+                right: 0,
+                child: CameraControls(
+                  isRecording: _isRecording,
+                  onCapturePhoto: _capturePhoto,
+                  onStartRecording: _startVideoRecording,
+                  onStopRecording: _stopVideoRecording,
+                  recordingAnimation: _recordingAnimationController,
+                ),
+              ),
+            ],
+          );
+        },
       ),
     );
   }
 
-  Widget _buildModeButton(String label, bool isSelected) {
+  Widget _buildModeButton(String label, bool isSelected, bool isTablet) {
     return GestureDetector(
       onTap: () {
         setState(() {
@@ -319,18 +389,35 @@ class _StoryCameraPageState extends State<StoryCameraPage>
           _isMultiCapture = label == 'MULTI';
         });
       },
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: EdgeInsets.symmetric(
+          horizontal: isTablet ? 16 : 12,
+          vertical: isTablet ? 12 : 8,
+        ),
         decoration: BoxDecoration(
-          color: isSelected ? Colors.white : Colors.black54,
-          borderRadius: BorderRadius.circular(20),
+          gradient: isSelected ? AppColors.primaryGradient : null,
+          color: isSelected ? null : Colors.black.withOpacity(0.6),
+          borderRadius: BorderRadius.circular(isTablet ? 24 : 20),
+          border: Border.all(
+            color: isSelected ? Colors.transparent : Colors.white.withOpacity(0.3),
+            width: 1,
+          ),
+          boxShadow: isSelected ? [
+            BoxShadow(
+              color: AppColors.primary.withOpacity(0.4),
+              blurRadius: isTablet ? 12 : 8,
+              offset: const Offset(0, 4),
+            ),
+          ] : null,
         ),
         child: Text(
           label,
           style: TextStyle(
-            color: isSelected ? Colors.black : Colors.white,
-            fontSize: 12,
-            fontWeight: FontWeight.bold,
+            color: Colors.white,
+            fontSize: isTablet ? 14 : 12,
+            fontWeight: FontWeight.w700,
+            letterSpacing: 0.5,
           ),
         ),
       ),

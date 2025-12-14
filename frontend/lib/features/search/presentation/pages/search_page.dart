@@ -66,10 +66,12 @@ class _SearchPageState extends State<SearchPage> with TickerProviderStateMixin {
   }
 
   PreferredSizeWidget _buildSearchAppBar() {
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final isTablet = constraints.maxWidth > 600;
-        return AppBar(
+    return PreferredSize(
+      preferredSize: const Size.fromHeight(56),
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final isTablet = constraints.maxWidth > 600;
+          return AppBar(
           backgroundColor: Colors.white,
           elevation: 0,
           toolbarHeight: isTablet ? 72 : 56,
@@ -147,7 +149,7 @@ class _SearchPageState extends State<SearchPage> with TickerProviderStateMixin {
               ),
           ],
         );
-      },
+      }),
     );
   }
 

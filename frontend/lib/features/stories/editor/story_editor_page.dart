@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'dart:io';
+import '../../../core/theme/app_colors.dart';
 import '../models/story_models.dart';
 import '../widgets/story_stickers.dart';
 import '../widgets/story_text_editor.dart';
@@ -15,12 +16,12 @@ class StoryEditorPage extends StatefulWidget {
   final ARFilter? selectedARFilter;
 
   const StoryEditorPage({
-    Key? key,
+    super.key,
     required this.mediaPath,
     required this.mediaType,
     this.selectedFilter,
     this.selectedARFilter,
-  }) : super(key: key);
+  });
 
   @override
   State<StoryEditorPage> createState() => _StoryEditorPageState();
@@ -459,17 +460,32 @@ class _StoryEditorPageState extends State<StoryEditorPage>
     );
   }
 
-  Widget _buildToolButton(IconData icon, VoidCallback onTap) {
+  Widget _buildToolButton(IconData icon, VoidCallback onTap, bool isTablet) {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        width: 44,
-        height: 44,
-        decoration: const BoxDecoration(
-          color: Colors.black54,
+        width: isTablet ? 56 : 44,
+        height: isTablet ? 56 : 44,
+        decoration: BoxDecoration(
+          color: Colors.black.withOpacity(0.6),
           shape: BoxShape.circle,
+          border: Border.all(
+            color: Colors.white.withOpacity(0.3),
+            width: 1,
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.3),
+              blurRadius: isTablet ? 8 : 6,
+              offset: const Offset(0, 2),
+            ),
+          ],
         ),
-        child: Icon(icon, color: Colors.white, size: 24),
+        child: Icon(
+          icon,
+          color: Colors.white,
+          size: isTablet ? 28 : 24,
+        ),
       ),
     );
   }

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:camera/camera.dart';
+import '../../../core/theme/app_colors.dart';
 import 'live_stream_page.dart';
 
 class LiveSetupPage extends StatefulWidget {
@@ -26,11 +27,16 @@ class _LiveSetupPageState extends State<LiveSetupPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.black,
-      body: Stack(
-        children: [
-          _buildCameraPreview(),
-          _buildSetupOverlay(),
-        ],
+      body: LayoutBuilder(
+        builder: (context, constraints) {
+          final isTablet = constraints.maxWidth > 600;
+          return Stack(
+            children: [
+              _buildCameraPreview(),
+              _buildSetupOverlay(isTablet),
+            ],
+          );
+        },
       ),
     );
   }
@@ -43,80 +49,203 @@ class _LiveSetupPageState extends State<LiveSetupPage> {
     }
     return Container(
       color: Colors.black,
-      child: const Center(
-        child: CircularProgressIndicator(),
+      child: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            CircularProgressIndicator(
+              color: AppColors.primary,
+              strokeWidth: 3,
+            ),
+            const SizedBox(height: 16),
+            Text(
+              'Initializing Camera...',
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 16,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
 
-  Widget _buildSetupOverlay() {
+  Widget _buildSetupOverlay(bool isTablet) {
     return SafeArea(
       child: Column(
         children: [
-          _buildTopBar(),
+          _buildTopBar(isTablet),
           const Spacer(),
-          _buildSetupPanel(),
+          _buildSetupPanel(isTablet),
         ],
       ),
     );
   }
 
-  Widget _buildTopBar() {
+  Widget _buildTopBar(bool isTablet) {
     return Padding(
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.all(isTablet ? 24 : 16),
       child: Row(
         children: [
-          IconButton(
-            icon: const Icon(Icons.close, color: Colors.white),
-            onPressed: () => Navigator.pop(context),
+          Container(
+            decoration: BoxDecoration(
+              color: Colors.black.withOpacity(0.5),
+              borderRadius: BorderRadius.circular(isTablet ? 16 : 12),
+              border: Border.all(
+                color: Colors.white.withOpacity(0.3),
+                width: 1,
+              ),
+            ),
+            child: IconButton(
+              icon: Icon(
+                Icons.close,
+                color: Colors.white,
+                size: isTablet ? 28 : 24,
+              ),
+              onPressed: () => Navigator.pop(context),
+            ),
           ),
           const Spacer(),
-          IconButton(
-            icon: const Icon(Icons.flip_camera_ios, color: Colors.white),
-            onPressed: _switchCamera,
+          Container(
+            decoration: BoxDecoration(
+              color: Colors.black.withOpacity(0.5),
+              borderRadius: BorderRadius.circular(isTablet ? 16 : 12),
+              border: Border.all(
+                color: Colors.white.withOpacity(0.3),
+                width: 1,
+              ),
+            ),
+            child: IconButton(
+              icon: Icon(
+                Icons.flip_camera_ios,
+                color: Colors.white,
+                size: isTablet ? 28 : 24,
+              ),
+              onPressed: _switchCamera,
+            ),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildSetupPanel() {
+  Widget _buildSetupPanel(bool isTablet) {
     return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      margin: EdgeInsets.all(isTablet ? 24 : 16),
+      padding: EdgeInsets.all(isTablet ? 32 : 24),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(isTablet ? 28 : 24),
+        border: Border.all(color: AppColors.border),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.primary.withOpacity(0.1),
+            blurRadius: isTablet ? 20 : 15,
+            offset: const Offset(0, 8),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Text(
-            'Go Live',
-            style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+          Row(
+            children: [
+              Container(
+                padding: EdgeInsets.all(isTablet ? 16 : 12),
+                decoration: BoxDecoration(
+                  gradient: AppColors.primaryGradient,
+                  borderRadius: BorderRadius.circular(isTablet ? 16 : 12),
+                ),
+                child: Icon(
+                  Icons.live_tv,
+                  color: Colors.white,
+                  size: isTablet ? 32 : 24,
+                ),
+              ),
+              SizedBox(width: isTablet ? 16 : 12),
+              Text(
+                'Go Live',
+                style: TextStyle(
+                  fontSize: isTablet ? 32 : 24,
+                  fontWeight: FontWeight.w800,
+                  color: AppColors.textPrimary,
+                  letterSpacing: -0.5,
+                ),
+              ),
+            ],
           ),
-          const SizedBox(height: 16),
-          TextField(
-            controller: _titleController,
-            decoration: const InputDecoration(
-              hintText: 'Add a title...',
-              border: OutlineInputBorder(),
+          SizedBox(height: isTablet ? 24 : 20),
+          Container(
+            decoration: BoxDecoration(
+              color: AppColors.backgroundSecondary,
+              borderRadius: BorderRadius.circular(isTablet ? 20 : 16),
+              border: Border.all(color: AppColors.border),
+            ),
+            child: TextField(
+              controller: _titleController,
+              style: TextStyle(
+                fontSize: isTablet ? 18 : 16,
+                color: AppColors.textPrimary,
+              ),
+              decoration: InputDecoration(
+                hintText: 'Add a title...',
+                hintStyle: TextStyle(
+                  color: AppColors.textTertiary,
+                  fontSize: isTablet ? 18 : 16,
+                ),
+                border: InputBorder.none,
+                contentPadding: EdgeInsets.all(isTablet ? 20 : 16),
+              ),
             ),
           ),
-          const SizedBox(height: 16),
-          _buildSettingsSection(),
-          const SizedBox(height: 20),
-          SizedBox(
+          SizedBox(height: isTablet ? 24 : 20),
+          _buildSettingsSection(isTablet),
+          SizedBox(height: isTablet ? 32 : 24),
+          Container(
             width: double.infinity,
-            child: ElevatedButton(
-              onPressed: _startLive,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.red,
-                padding: const EdgeInsets.symmetric(vertical: 16),
-              ),
-              child: const Text(
-                'Start Live Video',
-                style: TextStyle(color: Colors.white, fontSize: 16),
+            height: isTablet ? 64 : 56,
+            decoration: BoxDecoration(
+              gradient: AppColors.errorGradient,
+              borderRadius: BorderRadius.circular(isTablet ? 20 : 16),
+              boxShadow: [
+                BoxShadow(
+                  color: AppColors.error.withOpacity(0.4),
+                  blurRadius: isTablet ? 20 : 15,
+                  offset: const Offset(0, 8),
+                ),
+              ],
+            ),
+            child: Material(
+              color: Colors.transparent,
+              child: InkWell(
+                borderRadius: BorderRadius.circular(isTablet ? 20 : 16),
+                onTap: _startLive,
+                child: Container(
+                  alignment: Alignment.center,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        Icons.live_tv,
+                        color: Colors.white,
+                        size: isTablet ? 28 : 24,
+                      ),
+                      SizedBox(width: isTablet ? 12 : 8),
+                      Text(
+                        'Start Live Video',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: isTablet ? 18 : 16,
+                          fontWeight: FontWeight.w700,
+                          letterSpacing: 0.5,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
               ),
             ),
           ),
@@ -125,40 +254,84 @@ class _LiveSetupPageState extends State<LiveSetupPage> {
     );
   }
 
-  Widget _buildSettingsSection() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Text(
-          'Settings',
-          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-        ),
-        const SizedBox(height: 8),
-        _buildSettingTile(
-          'Allow comments',
-          _commentsEnabled,
-          (value) => setState(() => _commentsEnabled = value),
-        ),
-        _buildSettingTile(
-          'Allow guests',
-          _guestsEnabled,
-          (value) => setState(() => _guestsEnabled = value),
-        ),
-        _buildSettingTile(
-          'Enable shopping',
-          _shoppingEnabled,
-          (value) => setState(() => _shoppingEnabled = value),
-        ),
-      ],
+  Widget _buildSettingsSection(bool isTablet) {
+    return Container(
+      padding: EdgeInsets.all(isTablet ? 20 : 16),
+      decoration: BoxDecoration(
+        color: AppColors.backgroundSecondary,
+        borderRadius: BorderRadius.circular(isTablet ? 20 : 16),
+        border: Border.all(color: AppColors.border),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Settings',
+            style: TextStyle(
+              fontSize: isTablet ? 20 : 16,
+              fontWeight: FontWeight.w800,
+              color: AppColors.textPrimary,
+            ),
+          ),
+          SizedBox(height: isTablet ? 16 : 12),
+          _buildSettingTile(
+            'Allow comments',
+            _commentsEnabled,
+            (value) => setState(() => _commentsEnabled = value),
+            isTablet,
+          ),
+          _buildSettingTile(
+            'Allow guests',
+            _guestsEnabled,
+            (value) => setState(() => _guestsEnabled = value),
+            isTablet,
+          ),
+          _buildSettingTile(
+            'Enable shopping',
+            _shoppingEnabled,
+            (value) => setState(() => _shoppingEnabled = value),
+            isTablet,
+          ),
+        ],
+      ),
     );
   }
 
-  Widget _buildSettingTile(String title, bool value, Function(bool) onChanged) {
-    return SwitchListTile(
-      title: Text(title),
-      value: value,
-      onChanged: onChanged,
-      contentPadding: EdgeInsets.zero,
+  Widget _buildSettingTile(String title, bool value, Function(bool) onChanged, bool isTablet) {
+    return Container(
+      margin: EdgeInsets.only(bottom: isTablet ? 12 : 8),
+      padding: EdgeInsets.symmetric(
+        horizontal: isTablet ? 16 : 12,
+        vertical: isTablet ? 12 : 8,
+      ),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(isTablet ? 16 : 12),
+        border: Border.all(color: AppColors.border),
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: Text(
+              title,
+              style: TextStyle(
+                fontSize: isTablet ? 18 : 16,
+                fontWeight: FontWeight.w600,
+                color: AppColors.textPrimary,
+              ),
+            ),
+          ),
+          Transform.scale(
+            scale: isTablet ? 1.2 : 1.0,
+            child: Switch(
+              value: value,
+              onChanged: onChanged,
+              activeColor: AppColors.primary,
+              activeTrackColor: AppColors.primary.withOpacity(0.3),
+            ),
+          ),
+        ],
+      ),
     );
   }
 

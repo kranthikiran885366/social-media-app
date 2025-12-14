@@ -365,26 +365,62 @@ class _StoryEditorPageState extends State<StoryEditorPage>
             top: MediaQuery.of(context).padding.top + 16,
             left: 16,
             right: 16,
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                IconButton(
-                  onPressed: () => Navigator.pop(context),
-                  icon: const Icon(Icons.close, color: Colors.white, size: 28),
-                ),
-                Row(
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                final isTablet = constraints.maxWidth > 600;
+                return Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    IconButton(
-                      onPressed: _showTemplateSelector,
-                      icon: const Icon(Icons.auto_awesome, color: Colors.white),
+                    Container(
+                      decoration: BoxDecoration(
+                        color: Colors.black.withOpacity(0.5),
+                        borderRadius: BorderRadius.circular(isTablet ? 16 : 12),
+                      ),
+                      child: IconButton(
+                        onPressed: () => Navigator.pop(context),
+                        icon: Icon(
+                          Icons.close,
+                          color: Colors.white,
+                          size: isTablet ? 32 : 28,
+                        ),
+                      ),
                     ),
-                    IconButton(
-                      onPressed: _addTimeWeather,
-                      icon: const Icon(Icons.schedule, color: Colors.white),
+                    Row(
+                      children: [
+                        Container(
+                          margin: EdgeInsets.only(right: isTablet ? 12 : 8),
+                          decoration: BoxDecoration(
+                            color: Colors.black.withOpacity(0.5),
+                            borderRadius: BorderRadius.circular(isTablet ? 16 : 12),
+                          ),
+                          child: IconButton(
+                            onPressed: _showTemplateSelector,
+                            icon: Icon(
+                              Icons.auto_awesome,
+                              color: Colors.white,
+                              size: isTablet ? 28 : 24,
+                            ),
+                          ),
+                        ),
+                        Container(
+                          decoration: BoxDecoration(
+                            color: Colors.black.withOpacity(0.5),
+                            borderRadius: BorderRadius.circular(isTablet ? 16 : 12),
+                          ),
+                          child: IconButton(
+                            onPressed: _addTimeWeather,
+                            icon: Icon(
+                              Icons.schedule,
+                              color: Colors.white,
+                              size: isTablet ? 28 : 24,
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   ],
-                ),
-              ],
+                );
+              },
             ),
           ),
 
@@ -392,22 +428,27 @@ class _StoryEditorPageState extends State<StoryEditorPage>
           Positioned(
             right: 16,
             top: MediaQuery.of(context).size.height * 0.3,
-            child: Column(
-              children: [
-                _buildToolButton(Icons.text_fields, _showTextEditor),
-                const SizedBox(height: 16),
-                _buildToolButton(Icons.brush, () => setState(() => _isDrawingMode = true)),
-                const SizedBox(height: 16),
-                _buildToolButton(Icons.face_retouching_natural, _showStickerSelector),
-                const SizedBox(height: 16),
-                _buildToolButton(Icons.music_note, _showMusicSelector),
-                const SizedBox(height: 16),
-                _buildToolButton(Icons.location_on, _addLocation),
-                const SizedBox(height: 16),
-                _buildToolButton(Icons.tag, _addHashtag),
-                const SizedBox(height: 16),
-                _buildToolButton(Icons.alternate_email, _addMention),
-              ],
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                final isTablet = constraints.maxWidth > 600;
+                return Column(
+                  children: [
+                    _buildToolButton(Icons.text_fields, _showTextEditor),
+                    SizedBox(height: isTablet ? 20 : 16),
+                    _buildToolButton(Icons.brush, () => setState(() => _isDrawingMode = true)),
+                    SizedBox(height: isTablet ? 20 : 16),
+                    _buildToolButton(Icons.face_retouching_natural, _showStickerSelector),
+                    SizedBox(height: isTablet ? 20 : 16),
+                    _buildToolButton(Icons.music_note, _showMusicSelector),
+                    SizedBox(height: isTablet ? 20 : 16),
+                    _buildToolButton(Icons.location_on, _addLocation),
+                    SizedBox(height: isTablet ? 20 : 16),
+                    _buildToolButton(Icons.tag, _addHashtag),
+                    SizedBox(height: isTablet ? 20 : 16),
+                    _buildToolButton(Icons.alternate_email, _addMention),
+                  ],
+                );
+              },
             ),
           ),
 
@@ -416,43 +457,96 @@ class _StoryEditorPageState extends State<StoryEditorPage>
             bottom: MediaQuery.of(context).padding.bottom + 16,
             left: 16,
             right: 16,
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                TextButton(
-                  onPressed: () {},
-                  child: const Text('Save Draft', style: TextStyle(color: Colors.white)),
-                ),
-                Row(
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                final isTablet = constraints.maxWidth > 600;
+                return Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                      padding: EdgeInsets.symmetric(
+                        horizontal: isTablet ? 20 : 16,
+                        vertical: isTablet ? 12 : 8,
+                      ),
                       decoration: BoxDecoration(
-                        color: Colors.white24,
-                        borderRadius: BorderRadius.circular(20),
+                        color: Colors.black.withOpacity(0.5),
+                        borderRadius: BorderRadius.circular(isTablet ? 20 : 16),
+                        border: Border.all(
+                          color: Colors.white.withOpacity(0.3),
+                          width: 1,
+                        ),
                       ),
-                      child: const Text('Close Friends', style: TextStyle(color: Colors.white)),
-                    ),
-                    const SizedBox(width: 12),
-                    GestureDetector(
-                      onTap: _publishStory,
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                        decoration: BoxDecoration(
-                          gradient: const LinearGradient(
-                            colors: [Colors.purple, Colors.pink],
+                      child: InkWell(
+                        onTap: () {},
+                        child: Text(
+                          'Save Draft',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: isTablet ? 16 : 14,
+                            fontWeight: FontWeight.w600,
                           ),
-                          borderRadius: BorderRadius.circular(25),
-                        ),
-                        child: const Text(
-                          'Share',
-                          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
                         ),
                       ),
+                    ),
+                    Row(
+                      children: [
+                        Container(
+                          padding: EdgeInsets.symmetric(
+                            horizontal: isTablet ? 20 : 16,
+                            vertical: isTablet ? 12 : 8,
+                          ),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withOpacity(0.2),
+                            borderRadius: BorderRadius.circular(isTablet ? 20 : 16),
+                            border: Border.all(
+                              color: Colors.white.withOpacity(0.3),
+                              width: 1,
+                            ),
+                          ),
+                          child: Text(
+                            'Close Friends',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: isTablet ? 16 : 14,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                        SizedBox(width: isTablet ? 16 : 12),
+                        GestureDetector(
+                          onTap: _publishStory,
+                          child: Container(
+                            padding: EdgeInsets.symmetric(
+                              horizontal: isTablet ? 28 : 24,
+                              vertical: isTablet ? 16 : 12,
+                            ),
+                            decoration: BoxDecoration(
+                              gradient: AppColors.primaryGradient,
+                              borderRadius: BorderRadius.circular(isTablet ? 20 : 16),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: AppColors.primary.withOpacity(0.4),
+                                  blurRadius: isTablet ? 15 : 10,
+                                  offset: const Offset(0, 4),
+                                ),
+                              ],
+                            ),
+                            child: Text(
+                              'Share',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.w700,
+                                fontSize: isTablet ? 18 : 16,
+                                letterSpacing: 0.5,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   ],
-                ),
-              ],
+                );
+              },
             ),
           ),
         ],
@@ -460,33 +554,38 @@ class _StoryEditorPageState extends State<StoryEditorPage>
     );
   }
 
-  Widget _buildToolButton(IconData icon, VoidCallback onTap, bool isTablet) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        width: isTablet ? 56 : 44,
-        height: isTablet ? 56 : 44,
-        decoration: BoxDecoration(
-          color: Colors.black.withOpacity(0.6),
-          shape: BoxShape.circle,
-          border: Border.all(
-            color: Colors.white.withOpacity(0.3),
-            width: 1,
-          ),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.3),
-              blurRadius: isTablet ? 8 : 6,
-              offset: const Offset(0, 2),
+  Widget _buildToolButton(IconData icon, VoidCallback onTap) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final isTablet = constraints.maxWidth > 600;
+        return GestureDetector(
+          onTap: onTap,
+          child: Container(
+            width: isTablet ? 56 : 44,
+            height: isTablet ? 56 : 44,
+            decoration: BoxDecoration(
+              color: Colors.black.withOpacity(0.6),
+              shape: BoxShape.circle,
+              border: Border.all(
+                color: Colors.white.withOpacity(0.3),
+                width: 1,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.3),
+                  blurRadius: isTablet ? 8 : 6,
+                  offset: const Offset(0, 2),
+                ),
+              ],
             ),
-          ],
-        ),
-        child: Icon(
-          icon,
-          color: Colors.white,
-          size: isTablet ? 28 : 24,
-        ),
-      ),
+            child: Icon(
+              icon,
+              color: Colors.white,
+              size: isTablet ? 28 : 24,
+            ),
+          ),
+        );
+      },
     );
   }
 

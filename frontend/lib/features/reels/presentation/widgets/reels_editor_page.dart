@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:video_player/video_player.dart';
+import '../../../../core/theme/app_colors.dart';
 import '../bloc/reels_bloc.dart';
-import '../../data/models/reel_model.dart';
+import '../../data/models/reel_model.dart;
 
 class ReelsEditorPage extends StatefulWidget {
   final String videoPath;
@@ -62,67 +63,127 @@ class _ReelsEditorPageState extends State<ReelsEditorPage>
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.black,
-      body: BlocListener<ReelsBloc, ReelsState>(
-        listener: (context, state) {
-          if (state is VideoTrimmed) {
-            _updateVideoPath(state.trimmedPath);
-          } else if (state is SpeedChanged) {
-            _updateVideoSpeed(state.speed);
-          } else if (state is AudioAdded) {
-            setState(() {
-              _selectedAudio = state.audio;
-            });
-          } else if (state is EffectAdded) {
-            setState(() {
-              _appliedEffects.add(state.effect);
-            });
-          } else if (state is ReelPublished) {
-            Navigator.popUntil(context, (route) => route.isFirst);
-          }
+      body: LayoutBuilder(
+        builder: (context, constraints) {
+          final isTablet = constraints.maxWidth > 600;
+          return BlocListener<ReelsBloc, ReelsState>(
+            listener: (context, state) {
+              if (state is VideoTrimmed) {
+                _updateVideoPath(state.trimmedPath);
+              } else if (state is SpeedChanged) {
+                _updateVideoSpeed(state.speed);
+              } else if (state is AudioAdded) {
+                setState(() {
+                  _selectedAudio = state.audio;
+                });
+              } else if (state is EffectAdded) {
+                setState(() {
+                  _appliedEffects.add(state.effect);
+                });
+              } else if (state is ReelPublished) {
+                Navigator.popUntil(context, (route) => route.isFirst);
+              }
+            },
+            child: Column(
+              children: [
+                _buildTopBar(isTablet),
+                Expanded(
+                  flex: 3,
+                  child: _buildVideoPreview(isTablet),
+                ),
+                _buildTimelineEditor(isTablet),
+                Expanded(
+                  flex: 2,
+                  child: _buildEditingTabs(isTablet),
+                ),
+                _buildBottomActions(isTablet),
+              ],
+            ),
+          );
         },
-        child: Column(
-          children: [
-            _buildTopBar(),
-            Expanded(
-              flex: 3,
-              child: _buildVideoPreview(),
-            ),
-            _buildTimelineEditor(),
-            Expanded(
-              flex: 2,
-              child: _buildEditingTabs(),
-            ),
-            _buildBottomActions(),
-          ],
-        ),
       ),
     );
   }
 
-  Widget _buildTopBar() {
+  Widget _buildTopBar(bool isTablet) {
     return SafeArea(
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: EdgeInsets.all(isTablet ? 24 : 16),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            IconButton(
-              icon: const Icon(Icons.close, color: Colors.white),
-              onPressed: () => Navigator.pop(context),
-            ),
-            const Text(
-              'Edit Reel',
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
+            Container(
+              decoration: BoxDecoration(
+                color: Colors.black.withOpacity(0.5),
+                borderRadius: BorderRadius.circular(isTablet ? 16 : 12),
+                border: Border.all(
+                  color: Colors.white.withOpacity(0.3),
+                  width: 1,
+                ),
+              ),
+              child: IconButton(
+                icon: Icon(
+                  Icons.close,
+                  color: Colors.white,
+                  size: isTablet ? 32 : 28,
+                ),
+                onPressed: () => Navigator.pop(context),
               ),
             ),
-            TextButton(
-              onPressed: _saveDraft,
-              child: const Text(
-                'Draft',
-                style: TextStyle(color: Colors.white),
+            Container(
+              padding: EdgeInsets.symmetric(
+                horizontal: isTablet ? 20 : 16,
+                vertical: isTablet ? 12 : 8,
+              ),
+              decoration: BoxDecoration(
+                color: Colors.black.withOpacity(0.5),
+                borderRadius: BorderRadius.circular(isTablet ? 20 : 16),
+                border: Border.all(
+                  color: Colors.white.withOpacity(0.3),
+                  width: 1,
+                ),
+              ),
+              child: Text(
+                'Edit Reel',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: isTablet ? 20 : 18,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ),
+            Container(
+              decoration: BoxDecoration(
+                gradient: AppColors.primaryGradient,
+                borderRadius: BorderRadius.circular(isTablet ? 16 : 12),
+                boxShadow: [
+                  BoxShadow(
+                    color: AppColors.primary.withOpacity(0.4),
+                    blurRadius: isTablet ? 12 : 8,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+              ),
+              child: Material(
+                color: Colors.transparent,
+                child: InkWell(
+                  borderRadius: BorderRadius.circular(isTablet ? 16 : 12),
+                  onTap: _saveDraft,
+                  child: Padding(
+                    padding: EdgeInsets.symmetric(
+                      horizontal: isTablet ? 20 : 16,
+                      vertical: isTablet ? 12 : 8,
+                    ),
+                    child: Text(
+                      'Draft',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: isTablet ? 16 : 14,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                ),
               ),
             ),
           ],
@@ -131,7 +192,7 @@ class _ReelsEditorPageState extends State<ReelsEditorPage>
     );
   }
 
-  Widget _buildVideoPreview() {
+  Widget _buildVideoPreview(bool isTablet) {
     if (_videoController == null || !_videoController!.value.isInitialized) {
       return const Center(child: CircularProgressIndicator());
     }
@@ -238,10 +299,10 @@ class _ReelsEditorPageState extends State<ReelsEditorPage>
     );
   }
 
-  Widget _buildTimelineEditor() {
+  Widget _buildTimelineEditor(bool isTablet) {
     return Container(
-      height: 80,
-      margin: const EdgeInsets.symmetric(horizontal: 16),
+      height: isTablet ? 100 : 80,
+      margin: EdgeInsets.symmetric(horizontal: isTablet ? 24 : 16),
       child: Column(
         children: [
           Row(
@@ -296,7 +357,7 @@ class _ReelsEditorPageState extends State<ReelsEditorPage>
     );
   }
 
-  Widget _buildEditingTabs() {
+  Widget _buildEditingTabs(bool isTablet) {
     return Column(
       children: [
         TabBar(
@@ -559,9 +620,9 @@ class _ReelsEditorPageState extends State<ReelsEditorPage>
     );
   }
 
-  Widget _buildBottomActions() {
+  Widget _buildBottomActions(bool isTablet) {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.all(isTablet ? 24 : 16),
       child: Row(
         children: [
           Expanded(

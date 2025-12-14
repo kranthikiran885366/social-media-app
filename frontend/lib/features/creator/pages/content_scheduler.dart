@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import '../models/creator_models.dart';
+import '../../../core/theme/app_colors.dart';
+import '../models/creator_models.dart;
 
 class ContentScheduler extends StatefulWidget {
   const ContentScheduler({super.key});
@@ -20,59 +21,174 @@ class _ContentSchedulerState extends State<ContentScheduler> {
 
   @override
   Widget build(BuildContext context) {
-    return DefaultTabController(
-      length: 2,
-      child: Scaffold(
-        appBar: AppBar(
-          title: const Text('Content Manager'),
-          bottom: const TabBar(
-            tabs: [
-              Tab(text: 'Drafts'),
-              Tab(text: 'Scheduled'),
-            ],
-          ),
-        ),
-        body: TabBarView(
-          children: [
-            _buildDraftsTab(),
-            _buildScheduledTab(),
-          ],
-        ),
-        floatingActionButton: FloatingActionButton(
-          onPressed: _createNewDraft,
-          child: const Icon(Icons.add),
-        ),
+    return Scaffold(
+      backgroundColor: AppColors.background,
+      body: LayoutBuilder(
+        builder: (context, constraints) {
+          final isTablet = constraints.maxWidth > 600;
+          return DefaultTabController(
+            length: 2,
+            child: CustomScrollView(
+              slivers: [
+                SliverAppBar(
+                  backgroundColor: AppColors.background,
+                  elevation: 0,
+                  floating: true,
+                  snap: true,
+                  expandedHeight: isTablet ? 120 : 100,
+                  flexibleSpace: FlexibleSpaceBar(
+                    background: Container(
+                      decoration: BoxDecoration(
+                        gradient: AppColors.primaryGradient.scale(0.1),
+                      ),
+                    ),
+                    title: Text(
+                      'Content Manager',
+                      style: TextStyle(
+                        color: AppColors.textPrimary,
+                        fontSize: isTablet ? 24 : 20,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    centerTitle: false,
+                  ),
+                  leading: Container(
+                    margin: EdgeInsets.only(
+                      left: isTablet ? 24 : 16,
+                      top: isTablet ? 12 : 8,
+                    ),
+                    decoration: BoxDecoration(
+                      color: AppColors.surface,
+                      borderRadius: BorderRadius.circular(isTablet ? 16 : 12),
+                      border: Border.all(color: AppColors.border),
+                    ),
+                    child: IconButton(
+                      icon: Icon(
+                        Icons.arrow_back,
+                        color: AppColors.textPrimary,
+                        size: isTablet ? 28 : 24,
+                      ),
+                      onPressed: () => Navigator.pop(context),
+                    ),
+                  ),
+                  bottom: PreferredSize(
+                    preferredSize: Size.fromHeight(isTablet ? 60 : 50),
+                    child: Container(
+                      margin: EdgeInsets.symmetric(
+                        horizontal: isTablet ? 24 : 16,
+                      ),
+                      decoration: BoxDecoration(
+                        color: AppColors.surface,
+                        borderRadius: BorderRadius.circular(isTablet ? 16 : 12),
+                        border: Border.all(color: AppColors.border),
+                      ),
+                      child: TabBar(
+                        indicator: BoxDecoration(
+                          gradient: AppColors.primaryGradient,
+                          borderRadius: BorderRadius.circular(isTablet ? 16 : 12),
+                        ),
+                        labelColor: Colors.white,
+                        unselectedLabelColor: AppColors.textSecondary,
+                        labelStyle: TextStyle(
+                          fontSize: isTablet ? 16 : 14,
+                          fontWeight: FontWeight.w700,
+                        ),
+                        tabs: const [
+                          Tab(text: 'Drafts'),
+                          Tab(text: 'Scheduled'),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+                SliverFillRemaining(
+                  child: TabBarView(
+                    children: [
+                      _buildDraftsTab(isTablet),
+                      _buildScheduledTab(isTablet),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          );
+        },
+      ),
+      floatingActionButton: LayoutBuilder(
+        builder: (context, constraints) {
+          final isTablet = constraints.maxWidth > 600;
+          return Container(
+            width: isTablet ? 64 : 56,
+            height: isTablet ? 64 : 56,
+            decoration: BoxDecoration(
+              gradient: AppColors.primaryGradient,
+              borderRadius: BorderRadius.circular(isTablet ? 20 : 16),
+              boxShadow: [
+                BoxShadow(
+                  color: AppColors.primary.withOpacity(0.4),
+                  blurRadius: isTablet ? 15 : 10,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+            ),
+            child: Material(
+              color: Colors.transparent,
+              child: InkWell(
+                borderRadius: BorderRadius.circular(isTablet ? 20 : 16),
+                onTap: _createNewDraft,
+                child: Icon(
+                  Icons.add,
+                  color: Colors.white,
+                  size: isTablet ? 32 : 28,
+                ),
+              ),
+            ),
+          );
+        },
       ),
     );
   }
 
-  Widget _buildDraftsTab() {
+  Widget _buildDraftsTab(bool isTablet) {
     return ListView.builder(
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.all(isTablet ? 24 : 16),
       itemCount: _drafts.length,
       itemBuilder: (context, index) {
         final draft = _drafts[index];
-        return _buildDraftCard(draft);
+        return _buildDraftCard(draft, isTablet);
       },
     );
   }
 
-  Widget _buildScheduledTab() {
+  Widget _buildScheduledTab(bool isTablet) {
     return ListView.builder(
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.all(isTablet ? 24 : 16),
       itemCount: _scheduled.length,
       itemBuilder: (context, index) {
         final content = _scheduled[index];
-        return _buildScheduledCard(content);
+        return _buildScheduledCard(content, isTablet);
       },
     );
   }
 
-  Widget _buildDraftCard(ContentDraft draft) {
-    return Card(
-      margin: const EdgeInsets.only(bottom: 12),
+  Widget _buildDraftCard(ContentDraft draft, bool isTablet) {
+    return Container(
+      margin: EdgeInsets.only(bottom: isTablet ? 16 : 12),
+      padding: EdgeInsets.all(isTablet ? 24 : 20),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(isTablet ? 20 : 16),
+        border: Border.all(color: AppColors.border),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.primary.withOpacity(0.05),
+            blurRadius: isTablet ? 15 : 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: EdgeInsets.zero,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -150,11 +266,24 @@ class _ContentSchedulerState extends State<ContentScheduler> {
     );
   }
 
-  Widget _buildScheduledCard(ContentDraft content) {
-    return Card(
-      margin: const EdgeInsets.only(bottom: 12),
+  Widget _buildScheduledCard(ContentDraft content, bool isTablet) {
+    return Container(
+      margin: EdgeInsets.only(bottom: isTablet ? 16 : 12),
+      padding: EdgeInsets.all(isTablet ? 24 : 20),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(isTablet ? 20 : 16),
+        border: Border.all(color: AppColors.border),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.primary.withOpacity(0.05),
+            blurRadius: isTablet ? 15 : 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: EdgeInsets.zero,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:go_router/go_router.dart';
 import 'dart:io';
+import '../../../../core/theme/app_colors.dart';
 
 class ProfileSetupPage extends StatefulWidget {
   const ProfileSetupPage({super.key});
@@ -42,37 +43,98 @@ class _ProfileSetupPageState extends State<ProfileSetupPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Complete Your Profile'),
-        bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(4),
-          child: LinearProgressIndicator(value: _progress),
-        ),
-      ),
-      body: PageView(
-        controller: _pageController,
-        onPageChanged: (index) {
-          setState(() {
-            _currentStep = index;
-            _progress = (index + 1) / 6;
-          });
+      backgroundColor: AppColors.background,
+      body: LayoutBuilder(
+        builder: (context, constraints) {
+          final isTablet = constraints.maxWidth > 600;
+          return CustomScrollView(
+            slivers: [
+              SliverAppBar(
+                backgroundColor: AppColors.background,
+                elevation: 0,
+                floating: true,
+                snap: true,
+                expandedHeight: isTablet ? 140 : 120,
+                flexibleSpace: FlexibleSpaceBar(
+                  background: Container(
+                    decoration: BoxDecoration(
+                      gradient: AppColors.primaryGradient.scale(0.1),
+                    ),
+                  ),
+                  title: Text(
+                    'Complete Your Profile',
+                    style: TextStyle(
+                      color: AppColors.textPrimary,
+                      fontSize: isTablet ? 22 : 18,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  centerTitle: false,
+                ),
+                leading: Container(
+                  margin: EdgeInsets.only(
+                    left: isTablet ? 24 : 16,
+                    top: isTablet ? 12 : 8,
+                  ),
+                  decoration: BoxDecoration(
+                    color: AppColors.surface,
+                    borderRadius: BorderRadius.circular(isTablet ? 16 : 12),
+                    border: Border.all(color: AppColors.border),
+                  ),
+                  child: IconButton(
+                    icon: Icon(
+                      Icons.arrow_back,
+                      color: AppColors.textPrimary,
+                      size: isTablet ? 28 : 24,
+                    ),
+                    onPressed: () => Navigator.pop(context),
+                  ),
+                ),
+                bottom: PreferredSize(
+                  preferredSize: Size.fromHeight(isTablet ? 12 : 8),
+                  child: Container(
+                    margin: EdgeInsets.symmetric(
+                      horizontal: isTablet ? 24 : 16,
+                    ),
+                    child: LinearProgressIndicator(
+                      value: _progress,
+                      backgroundColor: AppColors.border,
+                      valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary),
+                      minHeight: isTablet ? 6 : 4,
+                    ),
+                  ),
+                ),
+              ),
+              SliverFillRemaining(
+                child: PageView(
+                  controller: _pageController,
+                  onPageChanged: (index) {
+                    setState(() {
+                      _currentStep = index;
+                      _progress = (index + 1) / 6;
+                    });
+                  },
+                  children: [
+                    _buildUsernameStep(isTablet),
+                    _buildProfilePhotoStep(isTablet),
+                    _buildPersonalInfoStep(isTablet),
+                    _buildBioStep(isTablet),
+                    _buildAccountTypeStep(isTablet),
+                    _buildPrivacyStep(isTablet),
+                  ],
+                ),
+              ),
+            ],
+          );
         },
-        children: [
-          _buildUsernameStep(),
-          _buildProfilePhotoStep(),
-          _buildPersonalInfoStep(),
-          _buildBioStep(),
-          _buildAccountTypeStep(),
-          _buildPrivacyStep(),
-        ],
       ),
       bottomNavigationBar: _buildBottomNavigation(),
     );
   }
 
-  Widget _buildUsernameStep() {
+  Widget _buildUsernameStep(bool isTablet) {
     return Padding(
-      padding: const EdgeInsets.all(24),
+      padding: EdgeInsets.all(isTablet ? 32 : 24),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -129,9 +191,9 @@ class _ProfileSetupPageState extends State<ProfileSetupPage> {
     );
   }
 
-  Widget _buildProfilePhotoStep() {
+  Widget _buildProfilePhotoStep(bool isTablet) {
     return Padding(
-      padding: const EdgeInsets.all(24),
+      padding: EdgeInsets.all(isTablet ? 32 : 24),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
@@ -185,9 +247,9 @@ class _ProfileSetupPageState extends State<ProfileSetupPage> {
     );
   }
 
-  Widget _buildPersonalInfoStep() {
+  Widget _buildPersonalInfoStep(bool isTablet) {
     return Padding(
-      padding: const EdgeInsets.all(24),
+      padding: EdgeInsets.all(isTablet ? 32 : 24),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -256,9 +318,9 @@ class _ProfileSetupPageState extends State<ProfileSetupPage> {
     );
   }
 
-  Widget _buildBioStep() {
+  Widget _buildBioStep(bool isTablet) {
     return Padding(
-      padding: const EdgeInsets.all(24),
+      padding: EdgeInsets.all(isTablet ? 32 : 24),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -334,9 +396,9 @@ class _ProfileSetupPageState extends State<ProfileSetupPage> {
     );
   }
 
-  Widget _buildAccountTypeStep() {
+  Widget _buildAccountTypeStep(bool isTablet) {
     return Padding(
-      padding: const EdgeInsets.all(24),
+      padding: EdgeInsets.all(isTablet ? 32 : 24),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -426,9 +488,9 @@ class _ProfileSetupPageState extends State<ProfileSetupPage> {
     );
   }
 
-  Widget _buildPrivacyStep() {
+  Widget _buildPrivacyStep(bool isTablet) {
     return Padding(
-      padding: const EdgeInsets.all(24),
+      padding: EdgeInsets.all(isTablet ? 32 : 24),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

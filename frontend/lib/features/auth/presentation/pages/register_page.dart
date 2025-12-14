@@ -233,50 +233,72 @@ class _RegisterPageState extends State<RegisterPage> with SingleTickerProviderSt
     VoidCallback? onToggleVisibility,
     String? Function(String?)? validator,
   }) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          label,
-          style: const TextStyle(
-            fontSize: 14,
-            fontWeight: FontWeight.w600,
-            color: Color(0xFF2D3436),
-          ),
-        ),
-        const SizedBox(height: 8),
-        Container(
-          decoration: BoxDecoration(
-            color: Colors.grey.shade50,
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: Colors.grey.shade200),
-          ),
-          child: TextFormField(
-            controller: controller,
-            keyboardType: keyboardType,
-            obscureText: isPassword && obscureText,
-            validator: validator,
-            style: const TextStyle(fontSize: 16),
-            decoration: InputDecoration(
-              hintText: hint,
-              hintStyle: TextStyle(color: Colors.grey.shade400),
-              prefixIcon: Icon(icon, color: const Color(0xFF6C5CE7), size: 22),
-              suffixIcon: isPassword
-                  ? IconButton(
-                      icon: Icon(
-                        obscureText ? Icons.visibility_outlined : Icons.visibility_off_outlined,
-                        color: Colors.grey.shade400,
-                        size: 22,
-                      ),
-                      onPressed: onToggleVisibility,
-                    )
-                  : null,
-              border: InputBorder.none,
-              contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final isTablet = constraints.maxWidth > 600;
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: isTablet ? 16 : 14,
+                fontWeight: FontWeight.w600,
+                color: const Color(0xFF2D3436),
+              ),
             ),
-          ),
-        ),
-      ],
+            SizedBox(height: isTablet ? 12 : 8),
+            Container(
+              decoration: BoxDecoration(
+                color: Colors.grey.shade50,
+                borderRadius: BorderRadius.circular(isTablet ? 20 : 16),
+                border: Border.all(color: Colors.grey.shade200),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.05),
+                    blurRadius: isTablet ? 15 : 10,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+              ),
+              child: TextFormField(
+                controller: controller,
+                keyboardType: keyboardType,
+                obscureText: isPassword && obscureText,
+                validator: validator,
+                style: TextStyle(fontSize: isTablet ? 18 : 16),
+                decoration: InputDecoration(
+                  hintText: hint,
+                  hintStyle: TextStyle(
+                    color: Colors.grey.shade400,
+                    fontSize: isTablet ? 18 : 16,
+                  ),
+                  prefixIcon: Icon(
+                    icon, 
+                    color: const Color(0xFF6C5CE7), 
+                    size: isTablet ? 26 : 22,
+                  ),
+                  suffixIcon: isPassword
+                      ? IconButton(
+                          icon: Icon(
+                            obscureText ? Icons.visibility_outlined : Icons.visibility_off_outlined,
+                            color: Colors.grey.shade400,
+                            size: isTablet ? 26 : 22,
+                          ),
+                          onPressed: onToggleVisibility,
+                        )
+                      : null,
+                  border: InputBorder.none,
+                  contentPadding: EdgeInsets.symmetric(
+                    horizontal: isTablet ? 24 : 20, 
+                    vertical: isTablet ? 22 : 18,
+                  ),
+                ),
+              ),
+            ),
+          ],
+        );
+      },
     );
   }
 
@@ -331,49 +353,54 @@ class _RegisterPageState extends State<RegisterPage> with SingleTickerProviderSt
     return BlocBuilder<AuthBloc, AuthState>(
       builder: (context, state) {
         final isLoading = state is AuthLoading;
-        return Container(
-          width: double.infinity,
-          height: 56,
-          decoration: BoxDecoration(
-            gradient: const LinearGradient(
-              colors: [Color(0xFF6C5CE7), Color(0xFFA29BFE)],
-            ),
-            borderRadius: BorderRadius.circular(16),
-            boxShadow: [
-              BoxShadow(
-                color: const Color(0xFF6C5CE7).withOpacity(0.4),
-                blurRadius: 20,
-                offset: const Offset(0, 10),
+        return LayoutBuilder(
+          builder: (context, constraints) {
+            final isTablet = constraints.maxWidth > 600;
+            return Container(
+              width: double.infinity,
+              height: isTablet ? 64 : 56,
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(
+                  colors: [Color(0xFF6C5CE7), Color(0xFFA29BFE)],
+                ),
+                borderRadius: BorderRadius.circular(isTablet ? 20 : 16),
+                boxShadow: [
+                  BoxShadow(
+                    color: const Color(0xFF6C5CE7).withOpacity(0.4),
+                    blurRadius: isTablet ? 25 : 20,
+                    offset: const Offset(0, 10),
+                  ),
+                ],
               ),
-            ],
-          ),
-          child: Material(
-            color: Colors.transparent,
-            child: InkWell(
-              onTap: isLoading ? null : _register,
-              borderRadius: BorderRadius.circular(16),
-              child: Center(
-                child: isLoading
-                    ? const SizedBox(
-                        height: 24,
-                        width: 24,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2.5,
-                          valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                        ),
-                      )
-                    : const Text(
-                        'Create Account',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                          letterSpacing: 0.5,
-                        ),
-                      ),
+              child: Material(
+                color: Colors.transparent,
+                child: InkWell(
+                  onTap: isLoading ? null : _register,
+                  borderRadius: BorderRadius.circular(isTablet ? 20 : 16),
+                  child: Center(
+                    child: isLoading
+                        ? SizedBox(
+                            height: isTablet ? 28 : 24,
+                            width: isTablet ? 28 : 24,
+                            child: const CircularProgressIndicator(
+                              strokeWidth: 2.5,
+                              valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                            ),
+                          )
+                        : Text(
+                            'Create Account',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: isTablet ? 18 : 16,
+                              fontWeight: FontWeight.w700,
+                              letterSpacing: 0.5,
+                            ),
+                          ),
+                  ),
+                ),
               ),
-            ),
-          ),
+            );
+          },
         );
       },
     );

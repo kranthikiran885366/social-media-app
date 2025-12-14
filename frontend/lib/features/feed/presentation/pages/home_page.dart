@@ -134,131 +134,149 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   }
 
   PreferredSizeWidget _buildAppBar() {
-    return AppBar(
-      backgroundColor: AppColors.background,
-      elevation: 0,
-      systemOverlayStyle: SystemUiOverlayStyle.dark,
-      title: ShaderMask(
-        shaderCallback: (bounds) => AppColors.primaryGradient.createShader(bounds),
-        child: const Text(
-          'Smart Social',
-          style: TextStyle(
-            color: Colors.white,
-            fontSize: 28,
-            fontWeight: FontWeight.w700,
-            letterSpacing: -0.5,
-          ),
-        ),
-      ),
-      actions: [
-        Container(
-          margin: const EdgeInsets.only(right: 8),
-          child: IconButton(
-            icon: Container(
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: AppColors.primary.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Icon(
-                Icons.favorite_outline,
-                color: AppColors.primary,
-                size: 20,
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final isTablet = constraints.maxWidth > 600;
+        return AppBar(
+          backgroundColor: AppColors.background,
+          elevation: 0,
+          systemOverlayStyle: SystemUiOverlayStyle.dark,
+          toolbarHeight: isTablet ? 80 : 56,
+          title: ShaderMask(
+            shaderCallback: (bounds) => AppColors.primaryGradient.createShader(bounds),
+            child: Text(
+              'Smart Social',
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: isTablet ? 32 : 28,
+                fontWeight: FontWeight.w700,
+                letterSpacing: -0.5,
               ),
             ),
-            onPressed: () {},
           ),
-        ),
-        Container(
-          margin: const EdgeInsets.only(right: 16),
-          child: IconButton(
-            icon: Container(
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: AppColors.secondary.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Icon(
-                Icons.send_outlined,
-                color: AppColors.secondary,
-                size: 20,
+          actions: [
+            Container(
+              margin: EdgeInsets.only(right: isTablet ? 12 : 8),
+              child: IconButton(
+                icon: Container(
+                  padding: EdgeInsets.all(isTablet ? 12 : 8),
+                  decoration: BoxDecoration(
+                    color: AppColors.primary.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(isTablet ? 16 : 12),
+                  ),
+                  child: Icon(
+                    Icons.favorite_outline,
+                    color: AppColors.primary,
+                    size: isTablet ? 24 : 20,
+                  ),
+                ),
+                onPressed: () {},
               ),
             ),
-            onPressed: () {},
-          ),
-        ),
-      ],
+            Container(
+              margin: EdgeInsets.only(right: isTablet ? 24 : 16),
+              child: IconButton(
+                icon: Container(
+                  padding: EdgeInsets.all(isTablet ? 12 : 8),
+                  decoration: BoxDecoration(
+                    color: AppColors.secondary.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(isTablet ? 16 : 12),
+                  ),
+                  child: Icon(
+                    Icons.send_outlined,
+                    color: AppColors.secondary,
+                    size: isTablet ? 24 : 20,
+                  ),
+                ),
+                onPressed: () {},
+              ),
+            ),
+          ],
+        );
+      },
     );
   }
 
   Widget _buildStoriesSection() {
-    return Container(
-      height: 100,
-      decoration: BoxDecoration(
-        color: AppColors.background,
-        border: Border(
-          bottom: BorderSide(
-            color: AppColors.border,
-            width: 0.5,
-          ),
-        ),
-      ),
-      child: ListView.builder(
-        scrollDirection: Axis.horizontal,
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        itemCount: 10,
-        itemBuilder: (context, index) {
-          return Container(
-            margin: const EdgeInsets.only(right: 12),
-            child: Column(
-              children: [
-                Container(
-                  width: 60,
-                  height: 60,
-                  decoration: BoxDecoration(
-                    gradient: index == 0 ? null : AppColors.storyGradient,
-                    shape: BoxShape.circle,
-                    border: index == 0 ? Border.all(
-                      color: AppColors.border,
-                      width: 2,
-                    ) : null,
-                  ),
-                  child: Container(
-                    margin: const EdgeInsets.all(2),
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: AppColors.background,
-                    ),
-                    child: index == 0
-                        ? Icon(
-                            Icons.add,
-                            color: AppColors.primary,
-                            size: 24,
-                          )
-                        : ClipOval(
-                            child: Image.network(
-                              'https://picsum.photos/100/100?random=$index',
-                              fit: BoxFit.cover,
-                              errorBuilder: (context, error, stackTrace) => 
-                                  Icon(Icons.person, color: AppColors.textTertiary),
-                            ),
-                          ),
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  index == 0 ? 'Your story' : 'User $index',
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: AppColors.textSecondary,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-              ],
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final isTablet = constraints.maxWidth > 600;
+        return Container(
+          height: isTablet ? 120 : 100,
+          decoration: BoxDecoration(
+            color: AppColors.background,
+            border: Border(
+              bottom: BorderSide(
+                color: AppColors.border,
+                width: 0.5,
+              ),
             ),
-          );
-        },
-      ),
+          ),
+          child: ListView.builder(
+            scrollDirection: Axis.horizontal,
+            padding: EdgeInsets.symmetric(
+              horizontal: isTablet ? 24 : 16, 
+              vertical: isTablet ? 12 : 8,
+            ),
+            itemCount: 10,
+            itemBuilder: (context, index) {
+              return Container(
+                margin: EdgeInsets.only(right: isTablet ? 16 : 12),
+                child: Column(
+                  children: [
+                    Container(
+                      width: isTablet ? 80 : 60,
+                      height: isTablet ? 80 : 60,
+                      decoration: BoxDecoration(
+                        gradient: index == 0 ? null : AppColors.storyGradient,
+                        shape: BoxShape.circle,
+                        border: index == 0 ? Border.all(
+                          color: AppColors.border,
+                          width: 2,
+                        ) : null,
+                      ),
+                      child: Container(
+                        margin: const EdgeInsets.all(2),
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: AppColors.background,
+                        ),
+                        child: index == 0
+                            ? Icon(
+                                Icons.add,
+                                color: AppColors.primary,
+                                size: isTablet ? 32 : 24,
+                              )
+                            : ClipOval(
+                                child: Image.network(
+                                  'https://picsum.photos/100/100?random=$index',
+                                  fit: BoxFit.cover,
+                                  errorBuilder: (context, error, stackTrace) => 
+                                      Icon(
+                                        Icons.person, 
+                                        color: AppColors.textTertiary,
+                                        size: isTablet ? 32 : 24,
+                                      ),
+                                ),
+                              ),
+                      ),
+                    ),
+                    SizedBox(height: isTablet ? 6 : 4),
+                    Text(
+                      index == 0 ? 'Your story' : 'User $index',
+                      style: TextStyle(
+                        fontSize: isTablet ? 14 : 12,
+                        color: AppColors.textSecondary,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            },
+          ),
+        );
+      },
     );
   }
 
@@ -328,22 +346,29 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   }
 
   Widget _buildScrollToTopFab() {
-    return AnimatedBuilder(
-      animation: _fabAnimation,
-      builder: (context, child) {
-        return Transform.scale(
-          scale: _fabAnimation.value,
-          child: Opacity(
-            opacity: _fabAnimation.value,
-            child: FloatingActionButton(
-              backgroundColor: AppColors.primary,
-              onPressed: _scrollToTop,
-              child: const Icon(
-                Icons.keyboard_arrow_up,
-                color: Colors.white,
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final isTablet = MediaQuery.of(context).size.width > 600;
+        return AnimatedBuilder(
+          animation: _fabAnimation,
+          builder: (context, child) {
+            return Transform.scale(
+              scale: _fabAnimation.value,
+              child: Opacity(
+                opacity: _fabAnimation.value,
+                child: FloatingActionButton(
+                  backgroundColor: AppColors.primary,
+                  onPressed: _scrollToTop,
+                  mini: !isTablet,
+                  child: Icon(
+                    Icons.keyboard_arrow_up,
+                    color: Colors.white,
+                    size: isTablet ? 32 : 24,
+                  ),
+                ),
               ),
-            ),
-          ),
+            );
+          },
         );
       },
     );

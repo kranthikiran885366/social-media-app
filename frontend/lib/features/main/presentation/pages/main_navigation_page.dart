@@ -94,133 +94,159 @@ class _MainNavigationPageState extends State<MainNavigationPage>
   }
 
   Widget _buildBottomNavigationBar() {
-    return Container(
-      decoration: BoxDecoration(
-        color: AppColors.background,
-        border: Border(
-          top: BorderSide(
-            color: AppColors.border,
-            width: 0.5,
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final isTablet = constraints.maxWidth > 600;
+        return Container(
+          decoration: BoxDecoration(
+            color: AppColors.background,
+            border: Border(
+              top: BorderSide(
+                color: AppColors.border,
+                width: 0.5,
+              ),
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.08),
+                blurRadius: isTablet ? 15 : 10,
+                offset: const Offset(0, -2),
+              ),
+            ],
           ),
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 10,
-            offset: const Offset(0, -2),
-          ),
-        ],
-      ),
-      child: SafeArea(
-        child: Container(
-          height: 60,
-          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: _navigationItems.asMap().entries.map((entry) {
-              final index = entry.key;
-              final item = entry.value;
-              final isSelected = index == _currentIndex;
-              
-              return Expanded(
-                child: Material(
-                  color: Colors.transparent,
-                  child: InkWell(
-                    onTap: () => _onTabTapped(index),
-                    borderRadius: BorderRadius.circular(12),
-                    child: Container(
-                      height: 44,
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(12),
-                        color: isSelected ? AppColors.primary.withOpacity(0.1) : Colors.transparent,
-                      ),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          AnimatedContainer(
-                            duration: const Duration(milliseconds: 200),
-                            child: Icon(
-                              isSelected ? item.activeIcon : item.icon,
-                              size: 24,
-                              color: isSelected ? AppColors.primary : AppColors.textTertiary,
-                            ),
+          child: SafeArea(
+            child: Container(
+              height: isTablet ? 72 : 60,
+              padding: EdgeInsets.symmetric(
+                horizontal: isTablet ? 12 : 8, 
+                vertical: isTablet ? 12 : 8,
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                children: _navigationItems.asMap().entries.map((entry) {
+                  final index = entry.key;
+                  final item = entry.value;
+                  final isSelected = index == _currentIndex;
+                  
+                  return Expanded(
+                    child: Material(
+                      color: Colors.transparent,
+                      child: InkWell(
+                        onTap: () => _onTabTapped(index),
+                        borderRadius: BorderRadius.circular(isTablet ? 16 : 12),
+                        child: Container(
+                          height: isTablet ? 52 : 44,
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(isTablet ? 16 : 12),
+                            color: isSelected ? AppColors.primary.withOpacity(0.12) : Colors.transparent,
                           ),
-                          if (isSelected)
-                            Container(
-                              margin: const EdgeInsets.only(top: 2),
-                              width: 4,
-                              height: 4,
-                              decoration: BoxDecoration(
-                                color: AppColors.primary,
-                                shape: BoxShape.circle,
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              AnimatedContainer(
+                                duration: const Duration(milliseconds: 200),
+                                child: Icon(
+                                  isSelected ? item.activeIcon : item.icon,
+                                  size: isTablet ? 28 : 24,
+                                  color: isSelected ? AppColors.primary : AppColors.textTertiary,
+                                ),
                               ),
-                            ),
-                        ],
+                              if (isSelected)
+                                Container(
+                                  margin: EdgeInsets.only(top: isTablet ? 4 : 2),
+                                  width: isTablet ? 6 : 4,
+                                  height: isTablet ? 6 : 4,
+                                  decoration: BoxDecoration(
+                                    color: AppColors.primary,
+                                    shape: BoxShape.circle,
+                                  ),
+                                ),
+                            ],
+                          ),
+                        ),
                       ),
                     ),
-                  ),
-                ),
-              );
-            }).toList(),
+                  );
+                }).toList(),
+              ),
+            ),
           ),
-        ),
-      ),
+        );
+      },
     );
   }
 
   Widget _buildFloatingActionButtons() {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        AnimatedBuilder(
-          animation: _fabAnimation,
-          builder: (context, child) {
-            return Transform.scale(
-              scale: _fabAnimation.value,
-              child: Opacity(
-                opacity: _fabAnimation.value,
-                child: FloatingActionButton(
-                  heroTag: "messages",
-                  mini: true,
-                  backgroundColor: AppColors.secondary,
-                  onPressed: _navigateToMessages,
-                  child: const Icon(Icons.message_outlined, color: Colors.white),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final isTablet = MediaQuery.of(context).size.width > 600;
+        return Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            AnimatedBuilder(
+              animation: _fabAnimation,
+              builder: (context, child) {
+                return Transform.scale(
+                  scale: _fabAnimation.value,
+                  child: Opacity(
+                    opacity: _fabAnimation.value,
+                    child: FloatingActionButton(
+                      heroTag: "messages",
+                      mini: !isTablet,
+                      backgroundColor: AppColors.secondary,
+                      onPressed: _navigateToMessages,
+                      child: Icon(
+                        Icons.message_outlined, 
+                        color: Colors.white,
+                        size: isTablet ? 28 : 24,
+                      ),
+                    ),
+                  ),
+                );
+              },
+            ),
+            SizedBox(height: isTablet ? 12 : 8),
+            AnimatedBuilder(
+              animation: _fabAnimation,
+              builder: (context, child) {
+                return Transform.scale(
+                  scale: _fabAnimation.value,
+                  child: Opacity(
+                    opacity: _fabAnimation.value,
+                    child: FloatingActionButton(
+                      heroTag: "notifications",
+                      mini: !isTablet,
+                      backgroundColor: AppColors.info,
+                      onPressed: _navigateToActivity,
+                      child: Icon(
+                        Icons.favorite_outline, 
+                        color: Colors.white,
+                        size: isTablet ? 28 : 24,
+                      ),
+                    ),
+                  ),
+                );
+              },
+            ),
+            SizedBox(height: isTablet ? 12 : 8),
+            FloatingActionButton(
+              heroTag: "main",
+              mini: !isTablet,
+              backgroundColor: AppColors.primary,
+              onPressed: _toggleFABs,
+              child: AnimatedRotation(
+                turns: _fabAnimation.value * 0.125,
+                duration: const Duration(milliseconds: 300),
+                child: Icon(
+                  Icons.add, 
+                  color: Colors.white,
+                  size: isTablet ? 32 : 28,
                 ),
               ),
-            );
-          },
-        ),
-        const SizedBox(height: 8),
-        AnimatedBuilder(
-          animation: _fabAnimation,
-          builder: (context, child) {
-            return Transform.scale(
-              scale: _fabAnimation.value,
-              child: Opacity(
-                opacity: _fabAnimation.value,
-                child: FloatingActionButton(
-                  heroTag: "notifications",
-                  mini: true,
-                  backgroundColor: AppColors.info,
-                  onPressed: _navigateToActivity,
-                  child: const Icon(Icons.favorite_outline, color: Colors.white),
-                ),
-              ),
-            );
-          },
-        ),
-        const SizedBox(height: 8),
-        FloatingActionButton(
-          heroTag: "main",
-          backgroundColor: AppColors.primary,
-          onPressed: _toggleFABs,
-          child: AnimatedRotation(
-            turns: _fabAnimation.value * 0.125,
-            duration: const Duration(milliseconds: 300),
-            child: const Icon(Icons.add, color: Colors.white),
-          ),
-        ),
-      ],
+            ),
+          ],
+        );
+      },
     );
   }
 

@@ -66,71 +66,88 @@ class _SearchPageState extends State<SearchPage> with TickerProviderStateMixin {
   }
 
   PreferredSizeWidget _buildSearchAppBar() {
-    return AppBar(
-      backgroundColor: Colors.white,
-      elevation: 0,
-      title: Container(
-        height: 36,
-        decoration: BoxDecoration(
-          color: const Color(0xFFEFEFEF),
-          borderRadius: BorderRadius.circular(10),
-        ),
-        child: TextField(
-          controller: _searchController,
-          focusNode: _searchFocusNode,
-          style: const TextStyle(
-            fontSize: 16,
-            color: Colors.black,
-          ),
-          decoration: const InputDecoration(
-            hintText: 'Search',
-            hintStyle: TextStyle(
-              color: Color(0xFF8E8E8E),
-              fontSize: 16,
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final isTablet = constraints.maxWidth > 600;
+        return AppBar(
+          backgroundColor: Colors.white,
+          elevation: 0,
+          toolbarHeight: isTablet ? 72 : 56,
+          title: Container(
+            height: isTablet ? 48 : 36,
+            decoration: BoxDecoration(
+              color: const Color(0xFFEFEFEF),
+              borderRadius: BorderRadius.circular(isTablet ? 16 : 10),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.05),
+                  blurRadius: isTablet ? 15 : 10,
+                  offset: const Offset(0, 2),
+                ),
+              ],
             ),
-            prefixIcon: Icon(
-              Icons.search,
-              color: Color(0xFF8E8E8E),
-              size: 20,
-            ),
-            border: InputBorder.none,
-            contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-          ),
-          onChanged: (query) {
-            setState(() {
-              _currentQuery = query;
-            });
-            if (query.isNotEmpty) {
-              context.read<SearchBloc>().add(LoadSuggestions(query));
-            }
-          },
-          onSubmitted: (query) {
-            if (query.isNotEmpty) {
-              context.read<SearchBloc>().add(SearchQuery(query));
-            }
-          },
-        ),
-      ),
-      actions: [
-        if (_isSearchActive)
-          TextButton(
-            onPressed: () {
-              _searchController.clear();
-              _searchFocusNode.unfocus();
-              setState(() {
-                _currentQuery = '';
-                _isSearchActive = false;
-              });
-            },
-            child: const Text(
-              'Cancel',
+            child: TextField(
+              controller: _searchController,
+              focusNode: _searchFocusNode,
               style: TextStyle(
+                fontSize: isTablet ? 18 : 16,
                 color: Colors.black,
-                fontSize: 16,
               ),
+              decoration: InputDecoration(
+                hintText: 'Search',
+                hintStyle: TextStyle(
+                  color: const Color(0xFF8E8E8E),
+                  fontSize: isTablet ? 18 : 16,
+                ),
+                prefixIcon: Icon(
+                  Icons.search,
+                  color: const Color(0xFF8E8E8E),
+                  size: isTablet ? 24 : 20,
+                ),
+                border: InputBorder.none,
+                contentPadding: EdgeInsets.symmetric(
+                  horizontal: isTablet ? 20 : 16, 
+                  vertical: isTablet ? 12 : 8,
+                ),
+              ),
+              onChanged: (query) {
+                setState(() {
+                  _currentQuery = query;
+                });
+                if (query.isNotEmpty) {
+                  context.read<SearchBloc>().add(LoadSuggestions(query));
+                }
+              },
+              onSubmitted: (query) {
+                if (query.isNotEmpty) {
+                  context.read<SearchBloc>().add(SearchQuery(query));
+                }
+              },
             ),
           ),
-      ],
+          actions: [
+            if (_isSearchActive)
+              TextButton(
+                onPressed: () {
+                  _searchController.clear();
+                  _searchFocusNode.unfocus();
+                  setState(() {
+                    _currentQuery = '';
+                    _isSearchActive = false;
+                  });
+                },
+                child: Text(
+                  'Cancel',
+                  style: TextStyle(
+                    color: Colors.black,
+                    fontSize: isTablet ? 18 : 16,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+          ],
+        );
+      },
     );
   }
 
@@ -685,7 +702,6 @@ class _SearchPageState extends State<SearchPage> with TickerProviderStateMixin {
   }
 
   Widget _buildExploreGrid() {
-    // Mock explore posts data
     final List<String> mockImages = [
       'https://picsum.photos/400/400?random=1',
       'https://picsum.photos/400/600?random=2',
@@ -698,39 +714,62 @@ class _SearchPageState extends State<SearchPage> with TickerProviderStateMixin {
       'https://picsum.photos/400/600?random=9',
     ];
 
-    return GridView.builder(
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 3,
-        crossAxisSpacing: 2,
-        mainAxisSpacing: 2,
-        childAspectRatio: 1,
-      ),
-      itemCount: mockImages.length,
-      itemBuilder: (context, index) {
-        return GestureDetector(
-          onTap: () {},
-          child: CachedNetworkImage(
-            imageUrl: mockImages[index],
-            fit: BoxFit.cover,
-            placeholder: (context, url) => Container(
-              color: const Color(0xFFF5F5F5),
-              child: const Center(
-                child: CircularProgressIndicator(
-                  strokeWidth: 2,
-                  color: Color(0xFF8E8E8E),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final isTablet = constraints.maxWidth > 600;
+        final crossAxisCount = isTablet ? 4 : 3;
+        final spacing = isTablet ? 4.0 : 2.0;
+        
+        return GridView.builder(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: crossAxisCount,
+            crossAxisSpacing: spacing,
+            mainAxisSpacing: spacing,
+            childAspectRatio: 1,
+          ),
+          itemCount: mockImages.length,
+          itemBuilder: (context, index) {
+            return GestureDetector(
+              onTap: () {},
+              child: Container(
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(isTablet ? 12 : 8),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.1),
+                      blurRadius: isTablet ? 8 : 4,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
+                ),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(isTablet ? 12 : 8),
+                  child: CachedNetworkImage(
+                    imageUrl: mockImages[index],
+                    fit: BoxFit.cover,
+                    placeholder: (context, url) => Container(
+                      color: const Color(0xFFF5F5F5),
+                      child: const Center(
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: Color(0xFF8E8E8E),
+                        ),
+                      ),
+                    ),
+                    errorWidget: (context, url, error) => Container(
+                      color: const Color(0xFFF5F5F5),
+                      child: const Icon(
+                        Icons.error_outline,
+                        color: Color(0xFF8E8E8E),
+                      ),
+                    ),
+                  ),
                 ),
               ),
-            ),
-            errorWidget: (context, url, error) => Container(
-              color: const Color(0xFFF5F5F5),
-              child: const Icon(
-                Icons.error_outline,
-                color: Color(0xFF8E8E8E),
-              ),
-            ),
-          ),
+            );
+          },
         );
       },
     );

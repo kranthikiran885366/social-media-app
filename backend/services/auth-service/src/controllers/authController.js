@@ -644,6 +644,312 @@ class AuthController {
       await sendSMS(user.phone, message);
     }
   }
+
+  // Refresh token
+  async refreshToken(req, res) {
+    try {
+      const { refreshToken } = req.body;
+      
+      if (!refreshToken) {
+        return res.status(401).json({
+          success: false,
+          message: 'Refresh token required'
+        });
+      }
+
+      const decoded = jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET);
+      const user = await User.findById(decoded.userId);
+
+      if (!user || !user.isActive) {
+        return res.status(401).json({
+          success: false,
+          message: 'Invalid refresh token'
+        });
+      }
+
+      const tokens = this.generateTokens(user._id);
+      
+      res.json({
+        success: true,
+        data: { tokens }
+      });
+    } catch (error) {
+      logger.error('Refresh token error:', error);
+      res.status(401).json({
+        success: false,
+        message: 'Invalid refresh token'
+      });
+    }
+  }
+
+  // Get profile
+  async getProfile(req, res) {
+    try {
+      const user = await User.findById(req.user.id)
+        .select('-password -twoFactor.secret -twoFactor.backupCodes');
+
+      if (!user) {
+        return res.status(404).json({
+          success: false,
+          message: 'User not found'
+        });
+      }
+
+      res.json({
+        success: true,
+        data: { user: user.toSafeObject() }
+      });
+    } catch (error) {
+      logger.error('Get profile error:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Internal server error'
+      });
+    }
+  }
+
+  // Update profile
+  async updateProfile(req, res) {
+    try {
+      const userId = req.user.id;
+      const updates = req.body;
+      
+      delete updates.password;
+      delete updates.email;
+      delete updates.twoFactor;
+      
+      const user = await User.findByIdAndUpdate(
+        userId,
+        updates,
+        { new: true, runValidators: true }
+      ).select('-password -twoFactor.secret -twoFactor.backupCodes');
+
+      if (!user) {
+        return res.status(404).json({
+          success: false,
+          message: 'User not found'
+        });
+      }
+
+      res.json({
+        success: true,
+        message: 'Profile updated successfully',
+        data: { user: user.toSafeObject() }
+      });
+    } catch (error) {
+      logger.error('Update profile error:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Internal server error'
+      });
+    }
+  }
+
+  // Change password
+  async changePassword(req, res) {
+    try {
+      const userId = req.user.id;
+      const { currentPassword, newPassword } = req.body;
+
+      const user = await User.findById(userId);
+      if (!user) {
+        return res.status(404).json({
+          success: false,
+          message: 'User not found'
+        });
+      }
+
+      const isCurrentPasswordValid = await user.comparePassword(currentPassword);
+      if (!isCurrentPasswordValid) {
+        return res.status(400).json({
+          success: false,
+          message: 'Current password is incorrect'
+        });
+      }
+
+      user.password = newPassword;
+      await user.save();
+
+      res.json({
+        success: true,
+        message: 'Password changed successfully'
+      });
+    } catch (error) {
+      logger.error('Change password error:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Internal server error'
+      });
+    }
+  }
+
+  // Forgot password
+  async forgotPassword(req, res) {
+    try {
+      const { email } = req.body;
+      const user = await User.findOne({ email });
+
+      if (!user) {
+        return res.json({
+          success: true,
+          message: 'If an account exists, a reset link has been sent'
+        });
+      }
+
+      const resetToken = user.generatePasswordResetToken();
+      await user.save();
+
+      const resetUrl = `${process.env.FRONTEND_URL}/reset-password?token=${resetToken}`;
+      
+      await sendEmail({
+        to: user.email,
+        template: 'password-reset',
+        data: {
+          name: user.fullName,
+          resetUrl
+        }
+      });
+
+      res.json({
+        success: true,
+        message: 'If an account exists, a reset link has been sent'
+      });
+    } catch (error) {
+      logger.error('Forgot password error:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Internal server error'
+      });
+    }
+  }
+
+  // Reset password
+  async resetPassword(req, res) {
+    try {
+      const { token, password } = req.body;
+      const crypto = require('crypto');
+      const hashedToken = crypto.createHash('sha256').update(token).digest('hex');
+
+      const user = await User.findOne({
+        passwordResetToken: hashedToken,
+        passwordResetExpires: { $gt: Date.now() }
+      });
+
+      if (!user) {
+        return res.status(400).json({
+          success: false,
+          message: 'Invalid or expired reset token'
+        });
+      }
+
+      user.password = password;
+      user.passwordResetToken = undefined;
+      user.passwordResetExpires = undefined;
+      await user.save();
+
+      res.json({
+        success: true,
+        message: 'Password reset successfully'
+      });
+    } catch (error) {
+      logger.error('Reset password error:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Internal server error'
+      });
+    }
+  }
+
+  // Verify email
+  async verifyEmail(req, res) {
+    try {
+      const { token } = req.body;
+      const user = await User.findOne({ emailVerificationToken: token });
+
+      if (!user) {
+        return res.status(400).json({
+          success: false,
+          message: 'Invalid verification token'
+        });
+      }
+
+      user.emailVerified = true;
+      user.emailVerificationToken = undefined;
+      await user.save();
+
+      res.json({
+        success: true,
+        message: 'Email verified successfully'
+      });
+    } catch (error) {
+      logger.error('Email verification error:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Internal server error'
+      });
+    }
+  }
+
+  // Google OAuth
+  async googleAuth(req, res) {
+    try {
+      const { idToken } = req.body;
+      
+      res.json({
+        success: true,
+        message: 'Google authentication not implemented yet'
+      });
+    } catch (error) {
+      logger.error('Google auth error:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Internal server error'
+      });
+    }
+  }
+
+  // Apple OAuth
+  async appleAuth(req, res) {
+    try {
+      const { identityToken } = req.body;
+      
+      res.json({
+        success: true,
+        message: 'Apple authentication not implemented yet'
+      });
+    } catch (error) {
+      logger.error('Apple auth error:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Internal server error'
+      });
+    }
+  }
+
+  // Logout
+  async logout(req, res) {
+    try {
+      const userId = req.user.id;
+      const deviceInfo = this.getDeviceInfo(req);
+
+      const user = await User.findById(userId);
+      if (user) {
+        user.devices = user.devices.filter(d => d.deviceId !== deviceInfo.deviceId);
+        await user.save();
+      }
+
+      res.json({
+        success: true,
+        message: 'Logged out successfully'
+      });
+    } catch (error) {
+      logger.error('Logout error:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Internal server error'
+      });
+    }
+  }
 }
 
 module.exports = new AuthController();

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../core/theme/app_colors.dart';
-import '../models/creator_models.dart;
+import '../models/creator_models.dart';
 
 class ContentScheduler extends StatefulWidget {
   const ContentScheduler({super.key});
